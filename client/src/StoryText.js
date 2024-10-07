@@ -1,6 +1,6 @@
 // StoryText.js
 import React from 'react';
-import ChoiceButtons from './ChoiceButtons.js';
+import ChoiceButtons from './ChoiceButtons';
 
 function StoryText({ node, onChoose }) {
   if (!node) {
