@@ -52,10 +52,7 @@ const port = 3001; // Make sure this matches what you're calling in App.js
 const cors = require('cors');
 app.use(cors());
 
-mongoose.connect('mongodb+srv://roshr:i0yzykZCS4iAsMxu@project1.r2d67.mongodb.net/project1?retryWrites=true&w=majority', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
+mongoose.connect('mongodb+srv://roshr:VP6vOrMOZ5uKzMNw@project1.r2d67.mongodb.net/project1?retryWrites=true&w=majority&appName=project1')
 .then(() => {
   console.log('Connected to MongoDB Atlas');
   addNode();
