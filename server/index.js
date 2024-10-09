@@ -8,8 +8,10 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const StoryNode = require('./StoryNode');
 const User = require('./User');
+const nodemailer = require('nodemailer');
 
 const app = express();
+app.set('trust proxy', true);
 const port = 3001; // This should match the client-side port
 
 // JWT Secret and MongoDB URI (Hardcoded)
@@ -26,6 +28,17 @@ const limiter = rateLimit({
   max: 100 // Limit each IP to 100 requests per windowMs
 });
 app.use(limiter);
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail', // You can change this to another service
+  auth: {
+    user: 'metamorphosisrestaurant365@gmail.com', // Your email
+    pass: 'cgka ugii xbwa hnjz', // Your email password or app password
+  },
+  tls: {
+    rejectUnauthorized: false, // Accept self-signed certificates
+  },
+});
 
 // MongoDB Connection
 mongoose.connect(MONGODB_URI)
@@ -89,6 +102,7 @@ const addNode = async () => {
 
 // Registration Route
 app.post('/api/auth/register', 
+  body('username').notEmpty().withMessage('Username is required'),
   body('email').isEmail(),
   body('password').isLength({ min: 6 }),
   async (req, res) => {
@@ -97,7 +111,7 @@ app.post('/api/auth/register',
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const { email, password } = req.body;
+    const { username, email, password } = req.body;
     try {
       let user = await User.findOne({ email });
       if (user) {
@@ -105,11 +119,23 @@ app.post('/api/auth/register',
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      user = new User({ email, password: hashedPassword });
+      user = new User({ username, email, password: hashedPassword });
       await user.save();
 
-      res.status(201).json({ success: true, message: 'User registered successfully' });
+      // Send verification email
+      const verificationLink = `http://localhost:3001/api/auth/verify/${user._id}`;
+      const mailOptions = {
+        from: 'your_email@gmail.com', // Your email
+        to: email,
+        subject: 'Email Verification',
+        text: `Hello ${username},\n\nPlease verify your email by clicking the link: ${verificationLink}`,
+      };
+
+      await transporter.sendMail(mailOptions);
+
+      res.status(201).json({ success: true, message: 'User registered successfully. Please check your email to verify your account.' });
     } catch (error) {
+      console.error('Server Error:', error);
       res.status(500).json({ success: false, error: 'Server error' });
     }
   }
@@ -119,6 +145,7 @@ app.post('/api/auth/register',
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   try {
+    console.log('Login request body:', req.body);  // Add this to log the incoming request
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ success: false, message: 'Invalid credentials' });
@@ -132,7 +159,26 @@ app.post('/api/auth/login', async (req, res) => {
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
     res.json({ success: true, token });
   } catch (error) {
+    console.error('Server Error during login:', error);  // Log the error
     res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+// Verification Route
+app.get('/api/auth/verify/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    user.verified = true; // Mark user as verified
+    await user.save();
+    res.status(200).json({ success: true, message: 'Email verified successfully!' });
+  } catch (error) {
+    console.error('Verification Error:', error);
+    res.status(500).json({ success: false, message: 'Error verifying email' });
   }
 });
 
