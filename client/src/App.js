@@ -1,32 +1,58 @@
+// App.js
 import React, { useState, useEffect } from 'react';
-import { Route, Routes, Link, Navigate } from 'react-router-dom'; // Removed BrowserRouter import
+import { Route, Routes, Link, Navigate } from 'react-router-dom';
 import StoryText from './StoryText';
 import Signup from './Signup';
 import Login from './Login';
+import ForgotPassword from './ForgotPassword';
+import ResetPassword from './ResetPassword';
 import './App.css';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [token, setToken] = useState(null);
   const [currentNode, setCurrentNode] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isLoggedIn) {
-      fetchNode('start'); // Load the starting node when logged in
+    if (isLoggedIn && token) {
+      fetchNode('start', token); // Fetch the starting story node when user logs in
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, token]);
 
-  const fetchNode = async (nodeId) => {
+  const fetchNode = async (nodeId, authToken) => {
+    setLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/story/${nodeId}`);
+      const response = await fetch(`http://localhost:3001/story/${nodeId}`, {
+        headers: {
+          'x-access-token': authToken, // Ensure the token is passed in the request header
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch story node');
+      }
       const data = await response.json();
-      setCurrentNode(data); // Update the state with the fetched data
+      setCurrentNode(data.node);
     } catch (error) {
       console.error('Error fetching node:', error);
+    } finally {
+      setLoading(false); // Stop loading after fetching the node
     }
   };
 
-  const handleLoginSuccess = () => {
+  const handleLoginSuccess = (authToken) => {
     setIsLoggedIn(true);
+    setToken(authToken);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setToken(null);
+    setCurrentNode(null);
+  };
+
+  const handleChoiceClick = (nextNodeId) => {
+    fetchNode(nextNodeId, token);
   };
 
   return (
@@ -40,18 +66,28 @@ function App() {
           <Routes>
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login onLogin={handleLoginSuccess} />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="*" element={<Navigate to="/login" />} />
           </Routes>
         </>
       ) : (
-        <>
-          <h1>Interactive Story</h1>
-          {currentNode ? (
-            <StoryText node={currentNode} onChoose={fetchNode} />
+        <div className="story-container">
+          <nav>
+            <button onClick={handleLogout}>Logout</button>
+          </nav>
+          {loading ? (
+            <p>Loading story...</p>
+          ) : currentNode ? (
+            <StoryText
+              text={currentNode.text}
+              choices={currentNode.choices}
+              onChoiceClick={handleChoiceClick}
+            />
           ) : (
-            <div>Loading...</div>
+            <p>No story node found.</p>
           )}
-        </>
+        </div>
       )}
     </div>
   );

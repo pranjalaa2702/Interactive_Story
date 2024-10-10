@@ -9,6 +9,7 @@ const rateLimit = require('express-rate-limit');
 const StoryNode = require('./StoryNode');
 const User = require('./User');
 const nodemailer = require('nodemailer');
+const crypto = require('crypto'); // for generating reset tokens
 
 const app = express();
 app.set('trust proxy', true);
@@ -51,38 +52,7 @@ mongoose.connect(MONGODB_URI)
 // Add Story Nodes Function
 const addNode = async () => {
   const nodes = [
-    {
-      id: 'start',
-      text: 'You are at a crossroads.',
-      choices: [
-        { text: 'Go left', nextNode: 'leftPath' },
-        { text: 'Go right', nextNode: 'rightPath' }
-      ]
-    },
-    {
-      id: 'leftPath',
-      text: 'You find yourself in a mysterious forest.',
-      choices: [
-        { text: 'Explore the forest', nextNode: 'forest' },
-        { text: 'Go back to the crossroads', nextNode: 'start' }
-      ]
-    },
-    {
-      id: 'rightPath',
-      text: 'You encounter a river.',
-      choices: [
-        { text: 'Swim across', nextNode: 'river' },
-        { text: 'Return to the crossroads', nextNode: 'start' }
-      ]
-    },
-    {
-      id: 'forest',
-      text: 'The forest is dark and full of secrets.',
-      choices: [
-        { text: 'Keep walking', nextNode: 'deepForest' },
-        { text: 'Go back to the forest entrance', nextNode: 'leftPath' }
-      ]
-    },
+    // Your story nodes
   ];
 
   try {
@@ -125,7 +95,7 @@ app.post('/api/auth/register',
       // Send verification email
       const verificationLink = `http://localhost:3001/api/auth/verify/${user._id}`;
       const mailOptions = {
-        from: 'your_email@gmail.com', // Your email
+        from: 'metamorphosisrestaurant365@gmail.com',
         to: email,
         subject: 'Email Verification',
         text: `Hello ${username},\n\nPlease verify your email by clicking the link: ${verificationLink}`,
@@ -138,14 +108,13 @@ app.post('/api/auth/register',
       console.error('Server Error:', error);
       res.status(500).json({ success: false, error: 'Server error' });
     }
-  }
-);
+});
 
 // Login Route
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   try {
-    console.log('Login request body:', req.body);  // Add this to log the incoming request
+    console.log('Login request body:', req.body);
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ success: false, message: 'Invalid credentials' });
@@ -159,7 +128,7 @@ app.post('/api/auth/login', async (req, res) => {
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
     res.json({ success: true, token });
   } catch (error) {
-    console.error('Server Error during login:', error);  // Log the error
+    console.error('Server Error during login:', error);
     res.status(500).json({ success: false, error: 'Server error' });
   }
 });
@@ -170,17 +139,82 @@ app.get('/api/auth/verify/:userId', async (req, res) => {
   try {
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res.status(404).send('<h2>User not found</h2>');
     }
 
     user.verified = true; // Mark user as verified
     await user.save();
-    res.status(200).json({ success: true, message: 'Email verified successfully!' });
+
+    res.send(`
+      <html>
+        <body style="display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: white;">
+          <h2 style="font-family: Arial, sans-serif;">Email verified! You may close this tab and return to the website.</h2>
+        </body>
+      </html>
+    `);
   } catch (error) {
     console.error('Verification Error:', error);
-    res.status(500).json({ success: false, message: 'Error verifying email' });
+    res.status(500).send('<h2>Error verifying email</h2>');
   }
 });
+
+// Forgot Password Route
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Generate a token for the password reset
+    const token = crypto.randomBytes(32).toString('hex');
+    user.resetToken = token; // Store the token in the user document
+    await user.save();
+
+    // Create a reset link
+    const resetLink = `http://localhost:3000/reset-password/${token}`;
+
+    // Send email
+    await transporter.sendMail({
+      to: email,
+      subject: 'Password Reset',
+      text: `You requested a password reset. Click the link to reset your password: ${resetLink}`,
+    });
+
+    res.status(200).json({ success: true, message: 'Password reset link sent to your email' });
+  } catch (error) {
+    console.error('Error sending email:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+
+// Reset Password Route
+app.post('/api/auth/reset-password/:token', async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  try {
+    const user = await User.findOne({ resetToken: token }); // Ensure the token exists
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Invalid token' });
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword; // Update user's password
+    user.resetToken = undefined; // Clear the token after reset
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Password reset successfully' });
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 
 // Middleware for Authentication
 const authMiddleware = (req, res, next) => {

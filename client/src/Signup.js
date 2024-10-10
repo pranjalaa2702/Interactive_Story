@@ -4,19 +4,26 @@ function Signup() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState(''); // State for confirm password
   const [message, setMessage] = useState('');
 
   const handleSignup = async (e) => {
     e.preventDefault();
+
+    if (password !== confirmPassword) {
+      setMessage("Passwords do not match. Please try again.");
+      return;
+    }
+
     try {
       const response = await fetch('http://localhost:3001/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, email, password }), // Ensure username is included here
+        body: JSON.stringify({ username, email, password }), // Include username in request
       });
-  
+
       const data = await response.json();
       if (response.ok) {
         setMessage('Signup successful! Please check your email to verify your account.');
@@ -30,7 +37,6 @@ function Signup() {
       setMessage('Network error: Please check your connection.');
     }
   };
-  
 
   return (
     <div>
@@ -56,6 +62,13 @@ function Signup() {
           placeholder="Password" 
           value={password} 
           onChange={(e) => setPassword(e.target.value)} 
+          required 
+        />
+        <input 
+          type="password" 
+          placeholder="Confirm Password" 
+          value={confirmPassword} 
+          onChange={(e) => setConfirmPassword(e.target.value)} 
           required 
         />
         <button type="submit">Signup</button>
