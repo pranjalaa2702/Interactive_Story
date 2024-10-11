@@ -114,7 +114,6 @@ app.post('/api/auth/register',
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   try {
-    console.log('Login request body:', req.body);
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ success: false, message: 'Invalid credentials' });
@@ -170,7 +169,11 @@ app.post('/api/auth/forgot-password', async (req, res) => {
 
     // Generate a token for the password reset
     const token = crypto.randomBytes(32).toString('hex');
-    user.resetToken = token; // Store the token in the user document
+    
+    // Assign the token to the user document
+    user.resetToken = token;
+    
+    // Save the user with the reset token
     await user.save();
 
     // Create a reset link
@@ -234,8 +237,8 @@ const authMiddleware = (req, res, next) => {
 
 // Protected Story Route
 app.get('/story/:nodeId', authMiddleware, async (req, res) => {
+  const nodeId = req.params.nodeId;
   try {
-    const nodeId = req.params.nodeId;
     const node = await StoryNode.findOne({ id: nodeId });
 
     if (!node) {

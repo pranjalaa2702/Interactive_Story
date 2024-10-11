@@ -25,6 +25,8 @@ const UserSchema = new mongoose.Schema({
     type: Boolean, 
     default: false // New field for verification status
   },
+    resetToken: { type: String },
+    resetTokenExpiry: { type: Date }  // Optional: for token expiration
 }, { timestamps: true }); // Automatically manage createdAt and updatedAt fields
 
 const User = mongoose.model('User', UserSchema);

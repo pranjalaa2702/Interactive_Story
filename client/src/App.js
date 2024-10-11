@@ -1,4 +1,3 @@
-// App.js
 import React, { useState, useEffect } from 'react';
 import { Route, Routes, Link, Navigate } from 'react-router-dom';
 import StoryText from './StoryText';
@@ -80,9 +79,8 @@ function App() {
             <p>Loading story...</p>
           ) : currentNode ? (
             <StoryText
-              text={currentNode.text}
-              choices={currentNode.choices}
-              onChoiceClick={handleChoiceClick}
+              node={currentNode}
+              onChoose={handleChoiceClick} // Ensure you pass handleChoiceClick as onChoose
             />
           ) : (
             <p>No story node found.</p>

@@ -2,7 +2,6 @@
 import React from 'react';
 
 function ChoiceButtons({ choices, onChoose }) {
-  console.log('Choices received:', choices); // Log choices to see if they are passed correctly
   if (!choices || choices.length === 0) {
     return <p>No choices available</p>;
   }
