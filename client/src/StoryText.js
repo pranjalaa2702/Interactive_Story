@@ -9,7 +9,10 @@ function StoryText({ node, onChoose }) {
 
   return (
     <div className="story-text">
-      <p>{node.text}</p>
+      <p>{node.perspective}</p>
+      <p style={{ whiteSpace: 'pre-line' }}>
+        {node.text}
+      </p>
       {/* Pass the choices to ChoiceButtons, and make sure to call onChoose with the next node id */}
       <ChoiceButtons choices={node.choices} onChoose={onChoose} />
     </div>

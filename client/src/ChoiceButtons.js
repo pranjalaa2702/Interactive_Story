@@ -2,6 +2,7 @@
 import React from 'react';
 
 function ChoiceButtons({ choices, onChoose }) {
+
   if (!choices || choices.length === 0) {
     return <p>No choices available</p>;
   }
@@ -10,7 +11,7 @@ function ChoiceButtons({ choices, onChoose }) {
     <div className="choice-buttons">
       {choices.map((choice, index) => (
         <button key={index} onClick={() => onChoose(choice.nextNode)}>
-          {choice.text}
+          {choice.option}
         </button>
       ))}
     </div>

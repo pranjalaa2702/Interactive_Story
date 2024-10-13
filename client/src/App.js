@@ -15,7 +15,7 @@ function App() {
 
   useEffect(() => {
     if (isLoggedIn && token) {
-      fetchNode('start', token); // Fetch the starting story node when user logs in
+      fetchNode('1', token); // Fetch the starting story node when user logs in
     }
   }, [isLoggedIn, token]);
 
