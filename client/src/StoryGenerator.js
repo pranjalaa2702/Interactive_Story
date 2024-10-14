@@ -1,37 +1,42 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 
 const StoryGenerator = () => {
   const [prompt, setPrompt] = useState(''); // Initial prompt from user
   const [story, setStory] = useState(''); // Holds the generated story
   const [isLoading, setIsLoading] = useState(false); // Loading state to handle async operations
-  const apiKey = 'Fwe0MgNNnEODngzvHb1lIxCgSQkorBP2';
+  const apiKey = '58feLhKI08jwC34BKB6wHFFKx4fMb2m6'; // Replace with your actual API key
   
-  // Function to generate a single story segment using the AI21 API
+  // Function to generate a single story segment using the AI21 API with fetch
   const generateStorySegment = async (prompt) => {
-    const apiUrl = 'https://api.ai21.com/studio/v1/j2-large/complete'; // Correct API endpoint
+    const apiUrl = 'https://api.ai21.com/studio/v1/chat/completions'; // Correct API endpoint
 
     try {
-      const response = await axios.post(
-        apiUrl,
-        {
-          prompt: prompt, // Directly include the prompt
-          maxTokens: 300, // Correct maxTokens syntax
-          temperature: 0.7, // Creative freedom in responses
-          stopSequences: ["THE END"] // Stop generation on "THE END"
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`, // Authorization header for API call
+          "Content-Type": "application/json",
         },
-        {
-          headers: {
-            Authorization: `Bearer ${apiKey}`, // Authorization header for API call
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      
+        body: JSON.stringify({
+          "model": "jamba-1.5-large",
+          "messages": [{"role": "user", "content": prompt}], // Using prompt for the story
+          "documents": [],
+          "tools": [],
+          "n": 1,
+          "max_tokens": 4096,
+          "temperature": 0.7,
+          "top_p": 1,
+          "stop": [],
+          "response_format": { "type": "text" }
+        }),
+      });
+
+      const data = await response.json();
+
       // Return the AI-generated text segment
-      return response.data.completions[0].data.text; // Correct response format
+      return data.choices[0].message.content; // Accessing the story content from the response
     } catch (error) {
-      console.error('AI21 API error:', error.response ? error.response.data : error.message);
+      console.error('AI21 API error:', error);
       return ''; // In case of error, return an empty string
     }
   };
@@ -57,7 +62,7 @@ const StoryGenerator = () => {
       }
 
       // Optional safeguard: Prevent overly long stories
-      if (fullStory.length > 5000) {
+      if (fullStory.length > 100000) {
         storyComplete = true;
       }
     }
@@ -73,7 +78,11 @@ const StoryGenerator = () => {
 
   // Helper function to generate the next prompt based on the previous segment
   const getNextPrompt = (lastSegment) => {
-    return `Continue the story: ${lastSegment.slice(-50)}`; // Use the last 50 characters as the continuation point
+    return `Continue from the last scene: ${lastSegment.slice(-100)} Remember: Each scene should have a description of the setting, characters, and the situation unfolding.
+Provide at least two meaningful choices at the end of each scene. Each choice should lead to a subsequent scene with its own description and branching paths.
+The scenes should stay true to the noir theme and should involve elements of mystery, danger, and moral ambiguity.
+The story should be dynamic, and each choice should significantly alter the story’s trajectory, with multiple endings based on the decisions made by the player.
+There must be 100 scenes in total. Nothing less`; // Use the last 50 characters as the continuation point
   };
 
   // Render the UI for the interactive story generator
@@ -95,7 +104,7 @@ const StoryGenerator = () => {
       {/* Display the generated story */}
       <div>
         <h2>Generated Story:</h2>
-        <p>{story}</p>
+        <pre>{story}</pre>
       </div>
     </div>
   );
