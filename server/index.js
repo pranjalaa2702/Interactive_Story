@@ -10,6 +10,7 @@ const StoryNode = require('./StoryNode');
 const User = require('./User');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto'); // for generating reset tokens
+const axios = require('axios');
 
 const app = express();
 app.set('trust proxy', true);
@@ -247,6 +248,30 @@ app.get('/story/:nodeId', authMiddleware, async (req, res) => {
     res.json({ success: true, node });
   } catch (error) {
     res.status(500).json({ success: false, error: 'An error occurred' });
+  }
+});
+
+app.post('/generate-story', async (req, res) => {
+  const { prompt } = req.body;
+
+  try {
+    const response = await axios.post(
+      'https://api.ai21.com/studio/v1/j1-large/complete',
+      {
+        prompt: prompt,
+        maxTokens: 200, // Adjust this as necessary
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.AI21_API_KEY}`, // Store in .env file
+        },
+      }
+    );
+
+    res.json({ storySegment: response.data.completions[0].data.text });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error generating story');
   }
 });
 
