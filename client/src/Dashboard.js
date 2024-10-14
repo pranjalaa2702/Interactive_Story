@@ -11,7 +11,7 @@ const Dashboard = () => {
         <Link to="/generate-story">
           <button>Generate Story</button>
         </Link>
-        <Link to={`/story/start`}>
+        <Link to="/story/1">
           <button>Play Story</button>
         </Link>
       </div>

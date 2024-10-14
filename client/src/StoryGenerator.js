@@ -7,20 +7,18 @@ const StoryGenerator = () => {
   const [isLoading, setIsLoading] = useState(false); // Loading state to handle async operations
   const apiKey = 'Fwe0MgNNnEODngzvHb1lIxCgSQkorBP2';
   
-  console.log(apiKey);
   // Function to generate a single story segment using the AI21 API
   const generateStorySegment = async (prompt) => {
-    const apiUrl = 'https://api.ai21.com/v1/chat/completions';
+    const apiUrl = 'https://api.ai21.com/studio/v1/j2-large/complete'; // Correct API endpoint
 
     try {
       const response = await axios.post(
         apiUrl,
         {
-          model: "jamba-1.5-large", // Use the desired model version
-          messages: [{ role: "user", content: prompt }],
-          max_tokens: 300, // Limit token count per response
+          prompt: prompt, // Directly include the prompt
+          maxTokens: 300, // Correct maxTokens syntax
           temperature: 0.7, // Creative freedom in responses
-          stop: ["\n"] // Stop generation on a new line
+          stopSequences: ["THE END"] // Stop generation on "THE END"
         },
         {
           headers: {
@@ -31,7 +29,7 @@ const StoryGenerator = () => {
       );
       
       // Return the AI-generated text segment
-      return response.data.choices[0].message.content;
+      return response.data.completions[0].data.text; // Correct response format
     } catch (error) {
       console.error('AI21 API error:', error.response ? error.response.data : error.message);
       return ''; // In case of error, return an empty string
