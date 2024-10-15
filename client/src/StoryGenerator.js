@@ -78,11 +78,34 @@ const StoryGenerator = () => {
 
   // Helper function to generate the next prompt based on the previous segment
   const getNextPrompt = (lastSegment) => {
-    return `Continue from the last scene: ${lastSegment.slice(-100)} Remember: Each scene should have a description of the setting, characters, and the situation unfolding.
-Provide at least two meaningful choices at the end of each scene. Each choice should lead to a subsequent scene with its own description and branching paths.
-The scenes should stay true to the noir theme and should involve elements of mystery, danger, and moral ambiguity.
-The story should be dynamic, and each choice should significantly alter the story’s trajectory, with multiple endings based on the decisions made by the player.
-There must be 100 scenes in total. Nothing less`; // Use the last 50 characters as the continuation point
+    return `Continue:
+Instructions:
+Check for Incomplete Scenes: Begin by checking if the last scene is incomplete or missing choices. If the last scene is incomplete or missing, complete it by providing a proper conclusion and choices.Follow the same formatting style as previous scenes(js). check the last scene (starts with "id"). If it has no "choices", redo from that "id".
+The scenes until now are: ${lastSegment}
+Format: Follow this structure for each scene in JavaScript:
+Scene ID: Each scene should have a unique ID, starting where the last scene left off (e.g., if the last complete scene is 53, continue with 54). If the last scene is incomplete, continue from the last scene (e.g. if the last incomplete scene is 53, coontinue from 54).
+Perspective: Either 'Detective,' 'Vera Steele,' or 'Alex.'
+Scene Description: Write the text inside backticks. This should be a detailed description of the setting, the characters, and the situation unfolding.
+Choices: End each scene with at least two meaningful choices that lead to different subsequent scenes, each with its own unique ID. Make sure the text for each choice and the next node is also inside backticks.
+Complete Story: Ensure the story progresses smoothly, completing any unfinished scenes from previous iterations and creating new scenes with consistent branching paths. Continue generating scenes in sequence and make sure to complete the story within a 100 scenes and no more.No IDs should go beyond 100.
+End the Story: The story must end at 'id': '100'. Nextnode can't exceed '100'. When you reach 'id': '100', make sure to conclude the story with a final resolution and print THE END.
+
+Example Format for Each Scene:
+{
+    "id": "54",
+    "perspective": "Detective",
+    "text": "The alley behind the warehouse is eerily quiet. You’ve followed the tip about Vera Steele’s secret meeting place, but now doubt is creeping in. A single light flickers above the door, casting strange shadows in the mist. Something feels wrong.",
+    "choices": [
+      {
+        "option": "Enter the building through the back door",
+        "nextNode": "55"
+      },
+      {
+        "option": "Wait outside and observe",
+        "nextNode": "56"
+      }
+    ]
+}`; 
   };
 
   // Render the UI for the interactive story generator
