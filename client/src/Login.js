@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import './login.css'; // Import your CSS file here
 
 function Login({ onLogin }) {
   const [email, setEmail] = useState('');
@@ -31,29 +32,37 @@ function Login({ onLogin }) {
   };
 
   return (
-    <div>
-      <h2>Login</h2>
-      {message && <p style={{ color: 'red' }}>{message}</p>}
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
+    <div className="container">
+      <div className="login-box">
+        <h2>Login</h2>
+        {message && <p style={{ color: 'red' }}>{message}</p>}
+        <form onSubmit={handleLogin}>
+          <label>Email</label>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <label>Password</label>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button type="submit" className="login-btn">Login</button>
+        </form>
+        <Link to="/forgot-password" className="forgot-password">Forgot Password?</Link>
+      </div>
+      <div className="animation-box">
+        <img
+          src="your-detective-icon-url" // Replace with your icon's URL
+          alt="Detective Icon"
+          className="detective-icon"
         />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Login</button>
-      </form>
-      {/* Keep only one forgot password link */}
-      <div style={{ marginTop: '10px' }}>
-        <Link to="/forgot-password">Forgot Password?</Link>
       </div>
     </div>
   );

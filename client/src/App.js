@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Route, Routes, Link, Navigate } from 'react-router-dom';
+import { Route, Routes, Link, Navigate, useNavigate } from 'react-router-dom';
 import StoryText from './StoryText';
 import Signup from './Signup';
 import Login from './Login';
@@ -12,6 +12,7 @@ import './App.css';
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState(null);
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const handleLoginSuccess = (authToken) => {
     setIsLoggedIn(true);
@@ -21,6 +22,11 @@ function App() {
   const handleLogout = () => {
     setIsLoggedIn(false);
     setToken(null);
+  };
+
+  const handleChoose = (choice) => {
+    console.log("User chose:", choice);
+    navigate(`/story/${choice}`);
   };
 
   return (
@@ -47,7 +53,7 @@ function App() {
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/generate-story" element={<StoryGenerator />} />
-            <Route path="/story/:nodeId" element={<StoryText token={token} />} />
+            <Route path="/story/:nodeId" element={<StoryText token={token} onChoose={handleChoose}/>} />
             <Route path="*" element={<Navigate to="/dashboard" />} />
           </Routes>
         </div>
