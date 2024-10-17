@@ -47,7 +47,7 @@ function App() {
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/generate-story" element={<StoryGenerator />} />
-            <Route path="/story/:nodeId" element={<StoryText />} />
+            <Route path="/story/:nodeId" element={<StoryText token={token} />} />
             <Route path="*" element={<Navigate to="/dashboard" />} />
           </Routes>
         </div>
