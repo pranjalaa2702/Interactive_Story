@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './login.css'; // Import your CSS file here
+import detectivePic from './detective_pic.jpg'; // Adjust the path as necessary based on your directory structure
+
 
 function Login({ onLogin }) {
   const [email, setEmail] = useState('');
@@ -59,7 +61,7 @@ function Login({ onLogin }) {
       </div>
       <div className="animation-box">
         <img
-          src="your-detective-icon-url" // Replace with your icon's URL
+          src={detectivePic} // Replace with your icon's URL
           alt="Detective Icon"
           className="detective-icon"
         />
