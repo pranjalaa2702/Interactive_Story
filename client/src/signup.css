@@ -21,7 +21,7 @@ body {
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); 
 }
 
-.login-box {
+.signup-box {
     padding: 60px;
     display: flex;
     flex-direction: column;
@@ -40,8 +40,9 @@ p {
     font-size: 18px; 
 }
 
-a{
-    color:#743c0ee5;
+a {
+    color: #743c0ee5;
+    text-decoration: none;
 }
 
 form {
@@ -63,20 +64,7 @@ input {
     font-size: 18px; 
 }
 
-.forgot-password {
-    margin-bottom: 25px; /* Reduce margin to match the desired space */
-    color: #743c0ee5;
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.forgot-password:hover {
-    color: #743c0ee5;
-    text-decoration: underline;
-}
-
-.login-btn {
+.signup-btn {
     background-color: #000000;
     color: white;
     padding: 14px;
@@ -84,25 +72,15 @@ input {
     border-radius: 6px;
     cursor: pointer;
     font-size: 18px; 
-}
-
-/* Signup Section */
-.signup-section {
+    text-align: center;
     margin-top: 20px;
-    font-size: 16px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
-.signup-link {
-    margin-left: 8px;
-    color: #743c0ee5;
-    font-weight: bold;
-}
 
-.signup-link:hover {
-    text-decoration: underline;
+
+.login-redirect {
+    margin-top: 20px;
+    text-align: center;
 }
 
 .animation-box {
@@ -119,6 +97,26 @@ input {
     width: 180px; 
     height: 180px;
     animation: bounce 2s infinite;
+}
+
+.login-redirect {
+    margin-top: 20px;
+    font-size: 16px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-btn2{
+    margin-left: 8px;
+    color: #743c0ee5;
+    font-weight: bold;
+    padding-bottom: 29px;
+    font-size: 18px;
+}
+
+.login-btn2:hover{
+    text-decoration: underline;
 }
 
 @keyframes bounce {

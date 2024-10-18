@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom'; // Import Link for navigation
+import './signup.css'; // Assuming this is the path to your CSS file
 
 function Signup() {
   const [username, setUsername] = useState('');
@@ -39,40 +41,54 @@ function Signup() {
   };
 
   return (
-    <div>
-      <h2>Signup</h2>
-      {message && <p style={{ color: 'red' }}>{message}</p>} {/* Error message styling */}
-      <form onSubmit={handleSignup}>
-        <input 
-          type="text" 
-          placeholder="Username" 
-          value={username} 
-          onChange={(e) => setUsername(e.target.value)} 
-          required 
+    <div className="container">
+      <div className="signup-box">
+        <h2>TellMeWhy</h2>
+        <p>Welcome to TellMeWhy where you can decide the destiny to your story</p>
+        {message && <p style={{ color: 'red' }}>{message}</p>} {/* Error message */}
+        <form onSubmit={handleSignup}>
+          <input 
+            type="text" 
+            placeholder="Username" 
+            value={username} 
+            onChange={(e) => setUsername(e.target.value)} 
+            required 
+          />
+          <input 
+            type="email" 
+            placeholder="Email" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+            required 
+          />
+          <input 
+            type="password" 
+            placeholder="Password" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+            required 
+          />
+          <input 
+            type="password" 
+            placeholder="Confirm Password" 
+            value={confirmPassword} 
+            onChange={(e) => setConfirmPassword(e.target.value)} 
+            required 
+          />
+          <button type="submit" className="signup-btn">Signup</button>
+        </form>
+        <div className="login-redirect">
+          <p>Already have an account?</p>
+          <Link to="/login" className="login-btn2">Login</Link>
+        </div>
+      </div>
+      <div className="animation-box">
+        <img 
+          src={require('./detective_pic.jpg')} // Replace with your actual image path
+          alt="Detective Icon"
+          className="detective-icon"
         />
-        <input 
-          type="email" 
-          placeholder="Email" 
-          value={email} 
-          onChange={(e) => setEmail(e.target.value)} 
-          required 
-        />
-        <input 
-          type="password" 
-          placeholder="Password" 
-          value={password} 
-          onChange={(e) => setPassword(e.target.value)} 
-          required 
-        />
-        <input 
-          type="password" 
-          placeholder="Confirm Password" 
-          value={confirmPassword} 
-          onChange={(e) => setConfirmPassword(e.target.value)} 
-          required 
-        />
-        <button type="submit">Signup</button>
-      </form>
+      </div>
     </div>
   );
 }
