@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import './login.css'; // Import your CSS file here
 import detectivePic from './detective_pic.jpg'; // Adjust the path as necessary based on your directory structure
 
-
 function Login({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,7 +38,6 @@ function Login({ onLogin }) {
         <h2>Login</h2>
         {message && <p style={{ color: 'red' }}>{message}</p>}
         <form onSubmit={handleLogin}>
-          <label>Email</label>
           <input
             type="email"
             placeholder="Email"
@@ -47,7 +45,6 @@ function Login({ onLogin }) {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-          <label>Password</label>
           <input
             type="password"
             placeholder="Password"
@@ -55,9 +52,19 @@ function Login({ onLogin }) {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          
+          {/* Forgot Password Link */}
+          <Link to="/forgot-password" className="forgot-password">Forgot Password?</Link>
+          
+          {/* Login Button */}
           <button type="submit" className="login-btn">Login</button>
+          
+          {/* Signup Link with "Don't have an account?" text */}
+          <div className="signup-section">
+            <span>Don't have an account? </span>
+            <Link to="/signup" className="signup-link">Signup</Link>
+          </div>
         </form>
-        <Link to="/forgot-password" className="forgot-password">Forgot Password?</Link>
       </div>
       <div className="animation-box">
         <img

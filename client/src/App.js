@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Route, Routes, Link, Navigate, useNavigate } from 'react-router-dom';
+import { Route, Routes, Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import StoryText from './StoryText';
 import Signup from './Signup';
 import Login from './Login';
@@ -13,6 +13,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState(null);
   const navigate = useNavigate(); // Initialize useNavigate
+  const location = useLocation(); // Get current route
 
   const handleLoginSuccess = (authToken) => {
     setIsLoggedIn(true);
@@ -34,8 +35,8 @@ function App() {
       {!isLoggedIn ? (
         <>
           <nav>
-            <Link to="/signup">Signup</Link>
-            <Link to="/login">Login</Link>
+            {location.pathname !== '/login' && <Link to="/login">Login</Link>}
+            {/* {location.pathname !== '/signup' && <Link to="/signup">Signup</Link>} */}
           </nav>
           <Routes>
             <Route path="/signup" element={<Signup />} />
