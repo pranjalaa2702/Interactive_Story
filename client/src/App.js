@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Route, Routes, Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { Route, Routes, Navigate, useNavigate } from 'react-router-dom'; // Removed Link and useLocation
 import StoryText from './StoryText';
 import Signup from './Signup';
 import Login from './Login';
@@ -12,8 +12,7 @@ import './App.css';
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState(null);
-  const navigate = useNavigate(); // Initialize useNavigate
-  const location = useLocation(); // Get current route
+  const navigate = useNavigate();
 
   const handleLoginSuccess = (authToken) => {
     setIsLoggedIn(true);
@@ -34,10 +33,6 @@ function App() {
     <div className="App">
       {!isLoggedIn ? (
         <>
-          <nav>
-            {location.pathname !== '/login' && <Link to="/login">Login</Link>}
-            {/* {location.pathname !== '/signup' && <Link to="/signup">Signup</Link>} */}
-          </nav>
           <Routes>
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login onLogin={handleLoginSuccess} />} />
