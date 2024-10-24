@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Route, Routes, Navigate, useNavigate } from 'react-router-dom'; // Removed Link and useLocation
 import StoryText from './StoryText';
 import Signup from './Signup';
@@ -14,14 +14,28 @@ function App() {
   const [token, setToken] = useState(null);
   const navigate = useNavigate();
 
+  // Check if the user is already logged in by retrieving the token from localStorage
+  useEffect(() => {
+    const storedToken = localStorage.getItem('authToken');
+    if (storedToken) {
+      setIsLoggedIn(true);
+      setToken(storedToken);
+    }
+  }, []);
+
   const handleLoginSuccess = (authToken) => {
+    // Store the token in localStorage for persistence
+    localStorage.setItem('authToken', authToken);
     setIsLoggedIn(true);
     setToken(authToken);
   };
 
   const handleLogout = () => {
+    // Clear the token from localStorage and update the state
+    localStorage.removeItem('authToken');
     setIsLoggedIn(false);
     setToken(null);
+    navigate('/login'); // Navigate to login after logging out
   };
 
   const handleChoose = (choice) => {
@@ -49,7 +63,7 @@ function App() {
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/generate-story" element={<StoryGenerator />} />
-            <Route path="/story/:nodeId" element={<StoryText token={token} onChoose={handleChoose}/>} />
+            <Route path="/story/:nodeId" element={<StoryText token={token} onChoose={handleChoose} />} />
             <Route path="*" element={<Navigate to="/dashboard" />} />
           </Routes>
         </div>
