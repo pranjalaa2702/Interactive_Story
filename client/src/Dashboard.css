@@ -67,9 +67,8 @@ nav .nav-links li a:hover {
 
 /* Hero Section */
 .hero {
-    background-size: cover;
+    background-size:cover;
     background-position: center;
-    height: 100vh; /* Full viewport height */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -77,8 +76,10 @@ nav .nav-links li a:hover {
     color: white;
     position: relative;
     overflow: hidden;
-    z-index:1;
-    padding-top: 300px;
+    padding-top: 1500px;
+    background-size: 60%;
+    height:100%;
+    width:100%;
 }
 
 .hero::before {
@@ -95,6 +96,7 @@ nav .nav-links li a:hover {
     position: relative;
     z-index: 1;
     animation: fadeIn 1s ease-out;
+    padding-bottom: 10%;
 }
 
 .hero-content h2 {
@@ -102,13 +104,15 @@ nav .nav-links li a:hover {
     margin-bottom: 1.25rem;
     letter-spacing: 0.1875rem;
     text-transform: uppercase;
-    font-family: sans-serif;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    color: #ddd;
 }
 
 .hero-content p {
     font-size: 1.375rem;
     margin-bottom: 2.5rem;
     font-weight: 400;
+    color: #ddd;
 }
 
 .cta-btn {

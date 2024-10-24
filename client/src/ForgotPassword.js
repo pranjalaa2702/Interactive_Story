@@ -1,5 +1,6 @@
 // ForgotPassword.js
 import React, { useState } from 'react';
+import './ForgotPassword.css'; // Assuming you save the CSS in a separate file
 
 function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -29,12 +30,14 @@ function ForgotPassword() {
   };
 
   return (
-    <div>
+    <div className="container">
       <h2>Forgot Password</h2>
       {message && <p style={{ color: 'red' }}>{message}</p>}
       <form onSubmit={handleForgotPassword}>
+        <label htmlFor="email">Email</label>
         <input
           type="email"
+          id="email"
           placeholder="Enter your email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}

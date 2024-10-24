@@ -29,7 +29,7 @@ const Dashboard = ({ onLogout }) => {
       </header>
 
       {/* Hero Section */}
-      <section className="hero" style={{ backgroundImage: `url(${bg})` }}>
+      <section className="hero" style={{ backgroundImage: `url(${bg})`}}>
         <div className="hero-content">
           <h2>Choose Your Story, Shape Your Destiny</h2>
           <p>Experience immersive, interactive stories where your decisions change everything.</p>
