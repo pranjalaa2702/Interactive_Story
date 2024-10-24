@@ -41,7 +41,7 @@ function Signup() {
   };
 
   return (
-    <div className="container">
+    <div className="container-1">
       <div className="signup-box">
         <h2>TellMeWhy</h2>
         <p>Welcome to TellMeWhy where you can decide the destiny to your story</p>

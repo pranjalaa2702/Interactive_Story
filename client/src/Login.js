@@ -33,7 +33,7 @@ function Login({ onLogin }) {
   };
 
   return (
-    <div className="container">
+    <div className="container-3">
       <div className="login-box">
         <h2>Login</h2>
         {message && <p style={{ color: 'red' }}>{message}</p>}
