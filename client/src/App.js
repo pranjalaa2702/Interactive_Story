@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Route, Routes, Navigate, useNavigate } from 'react-router-dom'; // Removed Link and useLocation
+import { Route, Routes, Navigate, useNavigate } from 'react-router-dom'; 
 import StoryText from './StoryText';
 import Signup from './Signup';
 import Login from './Login';
@@ -46,22 +46,20 @@ function App() {
   return (
     <div className="App">
       {!isLoggedIn ? (
-        <>
-          <Routes>
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/login" element={<Login onLogin={handleLoginSuccess} />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password/:token" element={<ResetPassword />} />
-            <Route path="*" element={<Navigate to="/login" />} />
-          </Routes>
-        </>
+        <Routes>
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login onLogin={handleLoginSuccess} />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="*" element={<Navigate to="/login" />} />
+        </Routes>
       ) : (
         <div className="app-container">
           <nav>
             <button onClick={handleLogout}>Logout</button>
           </nav>
           <Routes>
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard onLogout={handleLogout} />} />
             <Route path="/generate-story" element={<StoryGenerator />} />
             <Route path="/story/:nodeId" element={<StoryText token={token} onChoose={handleChoose} />} />
             <Route path="*" element={<Navigate to="/dashboard" />} />

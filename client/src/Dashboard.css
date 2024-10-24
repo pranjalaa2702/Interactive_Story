@@ -128,6 +128,22 @@ nav .nav-links li a:hover {
     box-shadow: 0 8px 30px rgba(109, 76, 65, 0.5);
 }
 
+.logout-btn {
+    background-color: #6d4c41; /* Red color for logout */
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+    background-color: #6d4c41; /* Darker red on hover */
+}
+
+
 /* Story Highlights */
 .story-highlights {
     padding: 4.375rem 5%;

@@ -1,12 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import './Dashboard.css'; // Assuming the CSS is in a separate file
+import './Dashboard.css'; 
 import love from './love.jfif.jpg';
 import king from './king.jpg';
-import bg from './homepage_pic.jpg'
-import det from './detective_pic1.jpg'
+import bg from './homepage_pic.jpg';
+import det from './detective_pic1.jpg';
 
-const Dashboard = () => {
+const Dashboard = ({ onLogout }) => {
+  // const navigate = useNavigate();
+
   return (
     <div>
       {/* Header Section */}
@@ -19,6 +21,9 @@ const Dashboard = () => {
             <li><a href="#stories">Stories</a></li>
             <li><a href="#about">About Us</a></li>
             <li><a href="#contact">Contact</a></li>
+            <li>
+              <button className="logout-btn" onClick={onLogout}>Logout</button>
+            </li>
           </ul>
         </nav>
       </header>
