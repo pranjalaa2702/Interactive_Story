@@ -55,9 +55,6 @@ function App() {
         </Routes>
       ) : (
         <div className="app-container">
-          <nav>
-            <button onClick={handleLogout}>Logout</button>
-          </nav>
           <Routes>
             <Route path="/dashboard" element={<Dashboard onLogout={handleLogout} />} />
             <Route path="/generate-story" element={<StoryGenerator />} />

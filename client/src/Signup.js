@@ -82,7 +82,7 @@ function Signup() {
           <Link to="/login" className="login-btn2">Login</Link>
         </div>
       </div>
-      <div className="animation-box">
+      <div className="animation-box" id='signup-animation'>
         <img 
           src={require('./detective_pic.jpg')} // Replace with your actual image path
           alt="Detective Icon"

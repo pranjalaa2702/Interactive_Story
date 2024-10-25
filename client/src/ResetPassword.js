@@ -1,6 +1,7 @@
 // ResetPassword.js
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import './ForgotPassword.css';
 
 function ResetPassword() {
   const { token } = useParams(); // Extract token from URL
@@ -38,7 +39,7 @@ function ResetPassword() {
   };
 
   return (
-    <div>
+    <div className="container-2" id='forgot-password'>
       <h2>Reset Password</h2>
       {message && <p style={{ color: 'red' }}>{message}</p>}
       <form onSubmit={handleReset}>

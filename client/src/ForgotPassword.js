@@ -30,7 +30,7 @@ function ForgotPassword() {
   };
 
   return (
-    <div className="container-2">
+    <div className="container-2" id='forgot-password'>
       <h2>Forgot Password</h2>
       {message && <p style={{ color: 'red' }}>{message}</p>}
       <form onSubmit={handleForgotPassword}>
