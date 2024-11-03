@@ -18,17 +18,15 @@
   }
   
   .choices button {
-    padding: 10px 15px;
-    font-size: 1em;
-    cursor: pointer;
-    background-color: #0057e7;
-    color: #fff;
+    background-color: #000000;
+    color: white;
+    padding: 14px;
     border: none;
-    border-radius: 5px;
-    transition: background-color 0.3s;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 18px;
   }
   
   .choices button:hover {
-    background-color: #003f9e;
+    background-color: #0000007e;
   }
-  

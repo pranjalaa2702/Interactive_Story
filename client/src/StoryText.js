@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
+import "./StoryText.css";
 
 const PremadeStory = ({ token, onChoose }) => {
   const { storyId } = useParams();
@@ -109,16 +110,12 @@ const PremadeStory = ({ token, onChoose }) => {
 
   return (
     <div>
-      <h2>Generated Story:</h2>
-      {isLoading ? (
-        <p>Loading story...</p>
-      ) : (
+      {isLoading ? <div> </div> : (
         currentScene && (
-          <div>
-            <h2>Story ID: {storyId}</h2>
+          <div className="story-text">
             <p><strong>Perspective:</strong> {currentScene.perspective}</p>
             <p><strong>Scene:</strong> {currentScene.text}</p>
-            <div>
+            <div className="choices">
               {currentScene.choices.map((choice, idx) => (
                 <button key={idx} style={{ display: 'block', margin: '5px 0' }} onClick={() => handleChoice(choice)}>
                   {choice.option}
