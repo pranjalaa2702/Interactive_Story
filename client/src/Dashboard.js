@@ -56,7 +56,7 @@ const Dashboard = ({ onLogout }) => {
             <img src={love} alt="Story 2" />
             <h3>Love in the Shadows</h3>
             <p>A romance entwined with secrets and danger. How far will you go for love?</p>
-            <Link to="/story/2">
+            <Link to="/story/2"> {/* Update this if you have different identifiers for stories */}
               <button className="read-more-btn">Play Now</button>
             </Link>
           </div>

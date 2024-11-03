@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Route, Routes, Navigate, useNavigate } from 'react-router-dom'; 
-import StoryText from './StoryText';
+import PremadeStory from './StoryText'; // Ensure this component does not reference nodeId
 import Signup from './Signup';
 import Login from './Login';
 import ForgotPassword from './ForgotPassword';
@@ -40,7 +40,7 @@ function App() {
 
   const handleChoose = (choice) => {
     console.log("User chose:", choice);
-    navigate(`/story/${choice}`);
+    navigate(`/story/${choice}`); // This still references choice; make sure choice doesn't relate to nodeId
   };
 
   return (
@@ -58,7 +58,7 @@ function App() {
           <Routes>
             <Route path="/dashboard" element={<Dashboard onLogout={handleLogout} />} />
             <Route path="/generate-story" element={<StoryGenerator />} />
-            <Route path="/story/:nodeId" element={<StoryText token={token} onChoose={handleChoose} />} />
+            <Route path="/story/:storyId" element={<PremadeStory token={token} onChoose={handleChoose} />} /> {/* Updated to storyId */}
             <Route path="*" element={<Navigate to="/dashboard" />} />
           </Routes>
         </div>
