@@ -3,16 +3,37 @@ import { useParams } from 'react-router-dom';
 import "./StoryText.css";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+// Adjusted safety settings to be less restrictive
+const safetySettings = [
+  {
+    category: "HARM_CATEGORY_HARASSMENT",
+    threshold: "BLOCK_NONE"
+  },
+  {
+    category: "HARM_CATEGORY_HATE_SPEECH",
+    threshold: "BLOCK_NONE"
+  },
+  {
+    category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+    threshold: "BLOCK_NONE"
+  },
+  {
+    category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+    threshold: "BLOCK_ONLY_HIGH"
+  }
+];
+
 const PremadeStory = ({ token, onChoose }) => {
   const { storyId } = useParams();
   const [currentScene, setCurrentScene] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [lastChoice, setLastChoice] = useState(null);
-  const [storyProgress, setStoryProgress] = useState([]);
-  const sceneLimit = 30;
 
-  const genAI = new GoogleGenerativeAI("AIzaSyDFX-jeNr095kCQ_nqInr6mcxjLeePQZtI");
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const genAI = new GoogleGenerativeAI("AIzaSyCi_19AYhy1oSTFLUN1CaR3XzbRb-Gja1Q");
+  const model = genAI.getGenerativeModel({ 
+    model: "gemini-1.5-flash",
+    safetySettings: safetySettings 
+  });
 
   const generateStorySegment = async (prompt) => {
     try {
@@ -20,40 +41,14 @@ const PremadeStory = ({ token, onChoose }) => {
       return response.response.text();
     } catch (error) {
       console.error('Gemini API error:', error);
-      const retryPrompt = `Please generate a scene in a romantic thriller with simpler language, formatted as JSON:
-      {
-        "perspective": "<character perspective>",
-        "text": "<scene description>",
-        "choices": [
-          {"option": "<player choice>"},
-          {"option": "<alternate choice>"}
-        ]
-      }`;
-      try {
-        const retryResponse = await model.generateContent(retryPrompt);
-        return retryResponse.response.text();
-      } catch (retryError) {
-        console.error('Retry failed:', retryError);
-        return '';
-      }
+      return '';
     }
   };
 
   const sanitizeJson = (text) => {
-    // Extract the JSON block between the first and last curly braces
-    const jsonMatch = text.match(/\{.*\}/s);
-    if (!jsonMatch) {
-      return '{}'; // Return an empty object if no JSON is found
-    }
-
-    // Clean up potential issues within the JSON block
-    let sanitizedText = jsonMatch[0]
-      .replace(/[^\x20-\x7E\n\t]/g, '') // Remove non-printable ASCII characters
-      .replace(/\n/g, ' ') // Replace newlines with spaces
-      .replace(/\s{2,}/g, ' ') // Collapse multiple spaces
-      .replace(/"choices":\s*\[\s*{[^}]*?"text":\s*".*?"/g, ''); // Remove invalid "text" fields in choices
-
-    return sanitizedText;
+    text = text.replace(/[^\x20-\x7E\n\t]/g, '').replace(/\n/g, ' ').replace(/\s{2,}/g, ' ');
+    const choiceTextRegex = /("choices":\s*\[\s*{[^}]*?)"text":\s*".*?"/g;
+    return text.replace(choiceTextRegex, '$1');
   };
 
   const generateScene = useCallback(async (prompt) => {
@@ -65,30 +60,24 @@ const PremadeStory = ({ token, onChoose }) => {
       try {
         const parsedSegment = JSON.parse(sanitizedSegment);
         setCurrentScene(parsedSegment);
-        setStoryProgress((prev) => [...prev, parsedSegment]);
       } catch (error) {
         console.error('Failed to parse segment:', sanitizedSegment);
       }
-    } else {
-      setCurrentScene({
-        perspective: "Narrator",
-        text: "An error occurred in the story progression. Please try again.",
-        choices: []
-      });
     }
     setIsLoading(false);
   }, []);
 
   useEffect(() => {
-    const initialPrompt = `Generate the opening scene in a romantic thriller with a JSON format:
+    const initialPrompt = `Generate a scene in a romantic thriller story involving secrets and danger, formatted as a JSON object. Each scene should strictly follow this format:
     {
       "perspective": "<character perspective, e.g., 'Detective', 'Lover', or 'Villain'>",
-      "text": "<detailed scene description>",
+      "text": "<descriptive text setting up the scene with tension, emotion, and vivid details>",
       "choices": [
-        {"option": "<player choice>"},
-        {"option": "<another player choice>"}
+        {"option": "<player choice, involving decisions that carry emotional or physical risk>"},
+        {"option": "<another player choice, leading to different outcomes or secrets revealed>"}
       ]
-    }`;
+    }
+    Only provide the JSON object without any additional text or formatting.`;
 
     generateScene(initialPrompt);
   }, [generateScene]);
@@ -96,25 +85,19 @@ const PremadeStory = ({ token, onChoose }) => {
   const handleChoice = (choice) => {
     setLastChoice(choice.option);
 
-    if (storyProgress.length >= sceneLimit) {
-      setCurrentScene({
-        perspective: "Narrator",
-        text: "The story has reached its thrilling conclusion. Thank you for playing!",
-        choices: []
-      });
-      return;
-    }
-
-    const previousScenes = storyProgress.map(scene => scene.text).join(' ');
-    const nextPrompt = `Based on previous scenes: "${previousScenes}" and user's choice "${choice.option}", generate the next scene in JSON format:
+    const nextPrompt = `The previous scene in a JSON format:
+    ${JSON.stringify(currentScene)} 
+    User's last choice: ${choice.option} 
+    Based on the previous scene in a romantic thriller story filled with secrets and danger, generate the next scene strictly as a JSON object. Each scene should follow this format:
     {
-      "perspective": "<character perspective>",
-      "text": "<scene description>",
+      "perspective": "<character perspective, e.g., 'Lover', 'Detective', or 'Villain'>",
+      "text": "<narrative that advances the plot based on the last scene, adding intrigue and developing the relationship between characters>",
       "choices": [
-        {"option": "<player choice>"},
-        {"option": "<alternate choice>"}
+        {"option": "<player choice that deepens the suspense or advances the romance>"},
+        {"option": "<alternate choice, leading to a different outcome or secret>"}
       ]
-    }`;
+    }
+    Only provide the JSON object without any additional text or formatting.`;
 
     generateScene(nextPrompt);
   };
