@@ -1,60 +1,33 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import "./StoryText.css";
+import { GoogleGenerativeAI } from "@google/generative-ai"; // Import the Google Generative AI library
 
 const PremadeStory = ({ token, onChoose }) => {
   const { storyId } = useParams();
   const [currentScene, setCurrentScene] = useState(null); // State to store only the current scene
   const [isLoading, setIsLoading] = useState(false);
   const [lastChoice, setLastChoice] = useState(null);
-  const apiKey = '58feLhKI08jwC34BKB6wHFFKx4fMb2m6';
+
+  const genAI = new GoogleGenerativeAI("AIzaSyD2m-GosuMGH6-wYa7Vg5EBBtk_2_aXN08"); // Replace with your Gemini API key
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const generateStorySegment = async (prompt) => {
-    const apiUrl = 'https://api.ai21.com/studio/v1/chat/completions';
-
     try {
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          "model": "jamba-1.5-large",
-          "messages": [{ "role": "user", "content": prompt }],
-          "documents": [],
-          "tools": [],
-          "n": 1,
-          "max_tokens": 4096,
-          "temperature": 0.7,
-          "top_p": 1,
-          "stop": [],
-          "response_format": { "type": "text" }
-        }),
-      });
-
-      const data = await response.json();
-      if (data.choices && data.choices.length > 0) {
-        return data.choices[0].message.content;
-      } else {
-        console.error('Invalid response structure:', data);
-        return '';
-      }
+      const response = await model.generateContent(prompt);
+      return response.response.text();
     } catch (error) {
-      console.error('AI21 API error:', error);
+      console.error('Gemini API error:', error);
       return '';
     }
   };
 
-  // Function to sanitize JSON text
   const sanitizeJson = (text) => {
     text = text.replace(/[^\x20-\x7E\n\t]/g, '').replace(/\n/g, ' ').replace(/\s{2,}/g, ' ');
-
     const choiceTextRegex = /("choices":\s*\[\s*{[^}]*?)"text":\s*".*?"/g;
     return text.replace(choiceTextRegex, '$1');
   };
 
-  // Function to generate and parse a single story segment
   const generateScene = useCallback(async (prompt) => {
     setIsLoading(true);
     const segment = await generateStorySegment(prompt);
@@ -63,7 +36,7 @@ const PremadeStory = ({ token, onChoose }) => {
       const sanitizedSegment = sanitizeJson(segment);
       try {
         const parsedSegment = JSON.parse(sanitizedSegment);
-        setCurrentScene(parsedSegment); // Set the current scene
+        setCurrentScene(parsedSegment);
       } catch (error) {
         console.error('Failed to parse segment:', sanitizedSegment);
       }
@@ -72,7 +45,6 @@ const PremadeStory = ({ token, onChoose }) => {
   }, []);
 
   useEffect(() => {
-    // Initial prompt to generate the first scene
     const initialPrompt = `Generate a scene in a romantic thriller story involving secrets and danger, formatted as a JSON object. Each scene should strictly follow this format:
     {
       "perspective": "<character perspective, e.g., 'Detective', 'Lover', or 'Villain'>",
@@ -84,13 +56,12 @@ const PremadeStory = ({ token, onChoose }) => {
     }
     Only provide the JSON object without any additional text or formatting.`;
 
-    generateScene(initialPrompt); // Generate the first scene
+    generateScene(initialPrompt);
   }, [generateScene]);
 
   const handleChoice = (choice) => {
-    setLastChoice(choice.option); // Store the last choice made by the player
+    setLastChoice(choice.option);
 
-    // Prepare the prompt for the next scene based on the last scene and user's choice
     const nextPrompt = `The previous scene in a JSON format:
     ${JSON.stringify(currentScene)} 
     User's last choice: ${choice.option} 
@@ -105,12 +76,12 @@ const PremadeStory = ({ token, onChoose }) => {
     }
     Only provide the JSON object without any additional text or formatting.`;
 
-    generateScene(nextPrompt); // Generate the next scene
+    generateScene(nextPrompt);
   };
 
   return (
     <div>
-      {isLoading ? <div> </div> : (
+      {isLoading ? <div>Loading...</div> : (
         currentScene && (
           <div className="story-text">
             <p><strong>Perspective:</strong> {currentScene.perspective}</p>
