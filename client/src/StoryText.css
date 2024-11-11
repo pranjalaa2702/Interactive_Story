@@ -1,32 +1,37 @@
 .story-text {
-    margin: 20px;
-    padding: 20px;
-    background-color: rgba(240, 240, 240, 0.95);
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    font-size: 1.2em;
-  }
-  
-  .story-text p {
-    margin-bottom: 1em;
-  }
-  
-  .choices {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .choices button {
-    background-color: #000000;
-    color: white;
-    padding: 14px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 18px;
-  }
-  
-  .choices button:hover {
-    background-color: #0000007e;
-  }
+  margin: 20px;
+  padding: 20px;
+  background-color: rgba(240, 240, 240, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  font-size: 1.2em;
+  position: relative;
+}
+
+.story-text p {
+  margin-bottom: 1em;
+}
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: fixed; /* Fix the buttons to the page */
+  left: 50%; /* Center horizontally */
+  bottom: 80px; /* Move the buttons 80px up from the bottom */
+  transform: translateX(-50%); /* Adjust for perfect centering */
+}
+
+.choices button {
+  background-color: #000000;
+  color: white;
+  padding: 14px 28px; /* Wider buttons */
+  border: none;
+  border-radius: 30px; /* Rounded corners */
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.choices button:hover {
+  background-color: #0000007e;
+}

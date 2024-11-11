@@ -243,6 +243,39 @@ nav .nav-links li a:hover {
     color: #1a1818;
 }
 
+/* Contact Section */
+.contact-us {
+    background-color: #f9f9f9c7;
+    padding: 40px 20px;
+    text-align: center;
+    border-radius: 8px;
+    margin: 40px auto;
+    width: 80%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .contact-us h2 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  .contact-us p {
+    font-size: 1.2rem;
+    color: #555;
+    margin-bottom: 10px;
+  }
+  
+  .contact-us a {
+    color: #8d525a;
+    text-decoration: none;
+  }
+  
+  .contact-us a:hover {
+    text-decoration: underline;
+  }
+  
+
 /* Footer */
 footer {
     background-color: #000000;
@@ -325,3 +358,4 @@ footer p {
         transform: translateY(0);
     }
 }
+

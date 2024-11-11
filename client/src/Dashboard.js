@@ -1,16 +1,41 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import './Dashboard.css'; 
 import love from './love.jfif.jpg';
 import king from './king.jpg';
 import bg from './homepage_pic.jpg';
 import det from './detective_pic1.jpg';
+import backgroundMusic from './Kingdom_dance.mp3'; 
 
 const Dashboard = ({ onLogout }) => {
-  // const navigate = useNavigate();
+  const [isMuted, setIsMuted] = useState(false);  // State to control the mute/unmute toggle
+  const audioRef = useRef(null);  
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.5;  
+    }
+  }, []);
+
+  // Function to toggle mute/unmute
+  const toggleMute = () => {
+    setIsMuted((prev) => {
+      const newMuteState = !prev;
+      if (audioRef.current) {
+        audioRef.current.muted = newMuteState;  // Set the audio's mute state
+      }
+      return newMuteState;
+    });
+  };
 
   return (
     <div>
+      {/* Audio Element for Background Music */}
+      <audio ref={audioRef} autoPlay loop>
+        <source src={backgroundMusic} type="audio/mp3" />
+        Your browser does not support the audio element.
+      </audio>
+
       {/* Header Section */}
       <header>
         <nav>
@@ -29,7 +54,7 @@ const Dashboard = ({ onLogout }) => {
       </header>
 
       {/* Hero Section */}
-      <section className="hero" style={{ backgroundImage: `url(${bg})`}}>
+      <section className="hero" style={{ backgroundImage: `url(${bg})` }}>
         <div className="hero-content">
           <h2>Choose Your Story, Shape Your Destiny</h2>
           <p>Experience immersive, interactive stories where your decisions change everything.</p>
@@ -56,23 +81,18 @@ const Dashboard = ({ onLogout }) => {
             <img src={love} alt="Story 2" />
             <h3>Love in the Shadows</h3>
             <p>A romance entwined with secrets and danger. How far will you go for love?</p>
-            <Link to="/story/2"> {/* Update this if you have different identifiers for stories */}
+            <Link to="/story/2">
               <button className="read-more-btn">Play Now</button>
             </Link>
           </div>
 
           <div className="story-card custom-form">
             <img src={det} alt="Story 3" />
-            <form id="custom-story-form">
-              <h3>Create Your Own Story</h3>
-              <label htmlFor="story-title">Story Title</label>
-              <input type="text" id="story-title" name="story-title" placeholder="Enter your story title" required />
-
-              <label htmlFor="story-description">Story Description</label>
-              <textarea id="story-description" name="story-description" rows="4" placeholder="Enter a short description" required></textarea>
-
-              <button type="submit" className="submit-btn">Submit Story</button>
-            </form>
+            <h3>Whispers of the Past</h3>
+            <p>A gripping mystery. Can you uncover the truth before the past catches up with you?</p>
+            <Link to="/story/3">
+              <button className="read-more-btn">Play Now</button>
+            </Link>
           </div>
         </div>
       </section>
@@ -83,14 +103,40 @@ const Dashboard = ({ onLogout }) => {
         <p>"Tell Me Why" is an interactive storytelling platform that brings your decisions to life. Every choice you make changes the narrative, leading to countless possibilities. Explore our library of stories and create your own adventure.</p>
       </section>
 
+      {/* Contact Section */}
+      <section id="contact" className="contact-us">
+        <h2>Contact Us</h2>
+        <p>For suggestions and queries, contact:</p>
+        <p><strong>Pranjalaa Rai</strong>, <strong>Pranav Rajesh</strong>, and <strong>Roshni Ramesh</strong></p>
+        <p>Email: <a href="mailto:metamorphosisrestaurant365@gmail.com">metamorphosisrestaurant365@gmail.com</a></p>
+      </section>
+
       {/* Footer Section */}
       <footer>
         <p>© 2024 Tell Me Why. All Rights Reserved.</p>
         <ul className="footer-links">
           <li><a href="#privacy">Privacy Policy</a></li>
-          <li><a href="#terms">Terms of Service</a></li>
-        </ul>
+          <li><a href="#terms">Terms of Service</a></li></ul>
       </footer>
+
+      {/* Mute/Unmute Button */}
+      <button
+        className="mute-btn"
+        onClick={toggleMute}
+        style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          background: 'rgba(0, 0, 0, 0.5)',
+          color: 'white',
+          border: 'none',
+          borderRadius: '50%',
+          padding: '10px 15px',
+          cursor: 'pointer',
+        }}
+      >
+        {isMuted ? 'Unmute' : 'Mute'}
+      </button>
     </div>
   );
 };
