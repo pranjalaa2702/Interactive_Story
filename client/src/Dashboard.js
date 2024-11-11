@@ -5,37 +5,10 @@ import love from './love.jfif.jpg';
 import king from './king.jpg';
 import bg from './homepage_pic.jpg';
 import det from './detective_pic1.jpg';
-import backgroundMusic from './Kingdom_dance.mp3'; 
 
 const Dashboard = ({ onLogout }) => {
-  const [isMuted, setIsMuted] = useState(false);  // State to control the mute/unmute toggle
-  const audioRef = useRef(null);  
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = 0.5;  
-    }
-  }, []);
-
-  // Function to toggle mute/unmute
-  const toggleMute = () => {
-    setIsMuted((prev) => {
-      const newMuteState = !prev;
-      if (audioRef.current) {
-        audioRef.current.muted = newMuteState;  // Set the audio's mute state
-      }
-      return newMuteState;
-    });
-  };
-
   return (
     <div>
-      {/* Audio Element for Background Music */}
-      <audio ref={audioRef} autoPlay loop>
-        <source src={backgroundMusic} type="audio/mp3" />
-        Your browser does not support the audio element.
-      </audio>
-
       {/* Header Section */}
       <header>
         <nav>
@@ -119,24 +92,7 @@ const Dashboard = ({ onLogout }) => {
           <li><a href="#terms">Terms of Service</a></li></ul>
       </footer>
 
-      {/* Mute/Unmute Button */}
-      <button
-        className="mute-btn"
-        onClick={toggleMute}
-        style={{
-          position: 'fixed',
-          bottom: '20px',
-          right: '20px',
-          background: 'rgba(0, 0, 0, 0.5)',
-          color: 'white',
-          border: 'none',
-          borderRadius: '50%',
-          padding: '10px 15px',
-          cursor: 'pointer',
-        }}
-      >
-        {isMuted ? 'Unmute' : 'Mute'}
-      </button>
+      
     </div>
   );
 };
