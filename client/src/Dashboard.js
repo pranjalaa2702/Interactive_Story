@@ -1,12 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import './Dashboard.css'; 
+import './Dashboard.css';
 import love from './love.jfif.jpg';
 import king from './king.jpg';
 import bg from './homepage_pic.jpg';
 import det from './detective_pic1.jpg';
 
 const Dashboard = ({ onLogout }) => {
+  const [userStories, setUserStories] = useState([]);
+
+  useEffect(() => {
+    const savedStories = JSON.parse(localStorage.getItem('userStories')) || [];
+    setUserStories(savedStories);
+  }, []);
+
   return (
     <div>
       {/* Header Section */}
@@ -59,7 +66,7 @@ const Dashboard = ({ onLogout }) => {
             </Link>
           </div>
 
-          <div className="story-card custom-form">
+          <div className="story-card">
             <img src={det} alt="Story 3" />
             <h3>Whispers of the Past</h3>
             <p>A gripping mystery. Can you uncover the truth before the past catches up with you?</p>
@@ -67,6 +74,17 @@ const Dashboard = ({ onLogout }) => {
               <button className="read-more-btn">Play Now</button>
             </Link>
           </div>
+
+          {/* User-Created Stories */}
+          {userStories.map((story) => (
+            <div className="story-card" key={story.id}>
+              <h3>{story.name}</h3>
+              <p>Custom story created by you.</p>
+              <Link to={`/story/${story.id}`}>
+                <button className="read-more-btn">Play Now</button>
+              </Link>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -89,10 +107,9 @@ const Dashboard = ({ onLogout }) => {
         <p>© 2024 Tell Me Why. All Rights Reserved.</p>
         <ul className="footer-links">
           <li><a href="#privacy">Privacy Policy</a></li>
-          <li><a href="#terms">Terms of Service</a></li></ul>
+          <li><a href="#terms">Terms of Service</a></li>
+        </ul>
       </footer>
-
-      
     </div>
   );
 };
