@@ -1,200 +1,185 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
+import './StoryText.css';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const StoryGenerator = () => {
-  const [prompt, setPrompt] = useState('');
-  const [story, setStory] = useState('');
-  const [displayedStory, setDisplayedStory] = useState(''); // State to control typing effect
+const StoryGenerator = ({ token, onChoose }) => {
+  const { storyId } = useParams();
+  const [currentScene, setCurrentScene] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const apiKey = '58feLhKI08jwC34BKB6wHFFKx4fMb2m6'; // Replace with your actual API key
+  const [lastChoice, setLastChoice] = useState(null);
+  const [storyProgress, setStoryProgress] = useState([]);
+  const [userPrompt, setUserPrompt] = useState('');
+  const [promptSubmitted, setPromptSubmitted] = useState(false);
+  const sceneLimit = 30;
 
-  // Function to generate a single story segment using the AI21 API with fetch
+  const genAI = new GoogleGenerativeAI('AIzaSyDFX-jeNr095kCQ_nqInr6mcxjLeePQZtI');
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
   const generateStorySegment = async (prompt) => {
-    const apiUrl = 'https://api.ai21.com/studio/v1/chat/completions';
-
     try {
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'jamba-1.5-large',
-          messages: [{ role: 'user', content: prompt }],
-          documents: [],
-          tools: [],
-          n: 1,
-          max_tokens: 4096,
-          temperature: 0.7,
-          top_p: 1,
-          stop: [],
-          response_format: { type: 'text' },
-        }),
-      });
-
-      const data = await response.json();
-      return data.choices[0].message.content;
+      const response = await model.generateContent(prompt);
+      const segment = response.response.text();
+      console.log('API Response:', segment); // Debugging log
+      return segment;
     } catch (error) {
-      console.error('AI21 API error:', error);
+      console.error('Gemini API error:', error);
       return '';
     }
   };
 
-  // Function to handle the complete story generation
-  const generateFullStory = async () => {
-    setIsLoading(true);
-    let fullStory = '';
-    let currentPrompt = prompt;
-    let storyComplete = false;
-
-    while (!storyComplete) {
-      const segment = await generateStorySegment(currentPrompt);
-      fullStory += segment;
-
-      if (isStoryComplete(segment)) {
-        storyComplete = true;
-      } else {
-        currentPrompt = getNextPrompt(segment);
-      }
-
-      if (fullStory.length > 100000) {
-        storyComplete = true;
-      }
+  const sanitizeJson = (text) => {
+    const jsonMatch = text.match(/\{.*\}/s);
+    if (!jsonMatch) {
+      console.warn('No JSON match found in:', text); // Debugging log
+      return '{}';
     }
 
-    setStory(fullStory);
-    setIsLoading(false);
+    let sanitizedText = jsonMatch[0]
+      .replace(/[^\x20-\x7E\n\t]/g, '')
+      .replace(/\n/g, ' ')
+      .replace(/\s{2,}/g, ' ');
+
+    console.log('Sanitized JSON:', sanitizedText); // Debugging log
+    return sanitizedText;
   };
 
-  // Helper function to determine if the story has reached its conclusion
-  const isStoryComplete = (segment) => {
-    return segment.includes('THE END');
-  };
-
-  // Helper function to generate the next prompt based on the previous segment
-  const getNextPrompt = (lastSegment) => {
-    return `Continue:
-    Instructions:
-    Check for Incomplete Scenes: Begin by checking if the last scene is incomplete or missing choices. If the last scene is incomplete or missing, complete it by providing a proper conclusion and choices...
+  const generateScene = useCallback(async (prompt) => {
+    setIsLoading(true);
+    
+    // Construct a more explicit prompt for the AI
+    const aiPrompt = `
+      Generate a JSON object for the next story segment. The object should look like this:
+      {
+        "perspective": "<character perspective>",
+        "text": "<scene description>",
+        "choices": [
+          {"option": "<player choice>"},
+          {"option": "<alternate choice>"}
+        ]
+      }
+  
+      The story starts with: "${prompt}"
     `;
-  };
+    
+    const segment = await generateStorySegment(aiPrompt);
+  
+    if (segment) {
+      const sanitizedSegment = sanitizeJson(segment);
+      try {
+        const parsedSegment = JSON.parse(sanitizedSegment);
+        console.log('Parsed JSON:', parsedSegment); // Debugging log
+        
+        if (parsedSegment.perspective && parsedSegment.text && Array.isArray(parsedSegment.choices)) {
+          setCurrentScene(parsedSegment);
+          setStoryProgress((prev) => {
+            const updatedProgress = [...prev, parsedSegment];
+            localStorage.setItem(`storyProgress_${storyId}`, JSON.stringify(updatedProgress));
+            return updatedProgress;
+          });
+        } else {
+          throw new Error('Incomplete or invalid JSON structure');
+        }
+      } catch (error) {
+        console.error('Failed to parse JSON or invalid structure:', error, sanitizedSegment);
+        setCurrentScene({
+          perspective: 'Narrator',
+          text: 'An error occurred while generating the story. Please try again.',
+          choices: []
+        });
+      }
+    } else {
+      setCurrentScene({
+        perspective: 'Narrator',
+        text: 'An error occurred in the story progression. Please try again.',
+        choices: []
+      });
+    }
+    
+    setIsLoading(false);
+  }, [storyId]);
+  
 
-  // Typing effect with useEffect
   useEffect(() => {
-    if (!story) return;
+    const savedProgress = localStorage.getItem(`storyProgress_${storyId}`);
+    if (savedProgress) {
+      const parsedProgress = JSON.parse(savedProgress);
+      setStoryProgress(parsedProgress);
+      setCurrentScene(parsedProgress[parsedProgress.length - 1]);
+    }
+  }, [storyId]);
 
-    let index = 0;
-    setDisplayedStory(''); // Clear displayedStory when a new story is set
-
-    const intervalId = setInterval(() => {
-      setDisplayedStory((prev) => prev + story.charAt(index));
-      index += 1;
-      if (index === story.length) clearInterval(intervalId); // Stop typing at the end
-    }, 50); // Adjust typing speed here (50ms per character)
-
-    return () => clearInterval(intervalId); // Cleanup interval on component unmount or new story
-  }, [story]);
-
-  // Inline CSS styles
-  const containerStyle = {
-    maxWidth: '800px',
-    margin: '20px auto',
-    padding: '20px',
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+  const handleStartStory = () => {
+    if (userPrompt.trim()) {
+      setPromptSubmitted(true);
+      generateScene(userPrompt);
+    }
   };
 
-  const titleStyle = {
-    textAlign: 'center',
-    fontSize: '2em',
-    color: '#333',
-    marginBottom: '20px',
+  const handleChoice = (choice) => {
+    setLastChoice(choice.option);
+
+    if (storyProgress.length >= sceneLimit) {
+      setCurrentScene({
+        perspective: 'Narrator',
+        text: 'The story has reached its thrilling conclusion. Thank you for playing!',
+        choices: []
+      });
+      return;
+    }
+
+    const previousScenes = storyProgress.map(scene => scene.text).join(' ');
+    const nextPrompt = `Based on previous scenes: "${previousScenes}" and user's choice "${choice.option}", generate the next scene in JSON format:
+    {
+      "perspective": "<character perspective>",
+      "text": "<scene description>",
+      "choices": [
+        {"option": "<player choice>"},
+        {"option": "<alternate choice>"}
+      ]
+    }`;
+
+    generateScene(nextPrompt);
   };
 
-  const textareaStyle = {
-    width: '100%',
-    padding: '10px',
-    fontSize: '1em',
-    border: '1px solid #ccc',
-    borderRadius: '4px',
-    resize: 'vertical',
-    boxSizing: 'border-box',
-    marginBottom: '15px',
-  };
-
-  const buttonStyle = {
-    display: 'block',
-    width: '100%',
-    padding: '10px',
-    fontSize: '1.1em',
-    backgroundColor: '#5d4037',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s ease',
-  };
-
-  const buttonDisabledStyle = {
-    backgroundColor: '#cccccc',
-    cursor: 'not-allowed',
-  };
-
-  const buttonHoverStyle = {
-    backgroundColor: '#5d4037',
-  };
-
-  const storySectionStyle = {
-    marginTop: '20px',
-  };
-
-  const storyHeadingStyle = {
-    fontSize: '1.5em',
-    color: '#333',
-    marginBottom: '10px',
-  };
-
-  const preStyle = {
-    backgroundColor: '#f9f9f9',
-    borderRadius: '4px',
-    padding: '20px',
-    whiteSpace: 'pre-wrap',
-    wordWrap: 'break-word',
-    fontFamily: "'Courier New', Courier, monospace",
-    color: '#333',
-    border: '1px solid #ddd',
-  };
+  const progressPercentage = (storyProgress.length / sceneLimit) * 100;
 
   return (
-    <div style={containerStyle}>
-      <h1 style={titleStyle}>Interactive Story Generator</h1>
-      <textarea
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-        placeholder="Enter the story prompt or character decision..."
-        rows="4"
-        cols="50"
-        style={textareaStyle}
-      />
-      <br />
-      <button
-        onClick={generateFullStory}
-        disabled={isLoading || !prompt}
-        style={{
-          ...buttonStyle,
-          ...(isLoading || !prompt ? buttonDisabledStyle : {}),
-        }}
-        onMouseOver={(e) => e.target.style.backgroundColor = buttonHoverStyle.backgroundColor}
-        onMouseOut={(e) => e.target.style.backgroundColor = buttonStyle.backgroundColor}
-      >
-        {isLoading ? 'Generating...' : 'Generate Story'}
-      </button>
+    <div>
+      {!promptSubmitted ? (
+        <div className="prompt-container">
+          <textarea
+            placeholder="Enter your starting prompt here..."
+            value={userPrompt}
+            onChange={(e) => setUserPrompt(e.target.value)}
+            rows="4"
+            cols="50"
+            className="user-prompt"
+          />
+          <button onClick={handleStartStory}>Start Story</button>
+        </div>
+      ) : isLoading ? (
+        <div>Loading...</div>
+      ) : (
+        currentScene && (
+          <div className="story-text">
+            <p><strong>Perspective:</strong> {currentScene.perspective}</p>
+            <p><strong>Scene:</strong> {currentScene.text}</p>
+            {currentScene.choices && (
+              <div className="choices">
+                {currentScene.choices.map((choice, idx) => (
+                  <button key={idx} style={{ display: 'block', margin: '5px 0' }} onClick={() => handleChoice(choice)}>
+                    {choice.option}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )
+      )}
 
-      {/* Display the generated story with typing effect */}
-      <div style={storySectionStyle}>
-        <h2 style={storyHeadingStyle}>Generated Story:</h2>
-        <pre style={preStyle}>{displayedStory}</pre>
+      <div className="progress-bar-container">
+        <div className="progress-bar-fill" style={{ width: `${progressPercentage}%` }} />
       </div>
     </div>
   );
