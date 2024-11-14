@@ -40,18 +40,16 @@ const PremadeStory = ({ token, onChoose }) => {
   };
 
   const sanitizeJson = (text) => {
-    // Extract the JSON block between the first and last curly braces
     const jsonMatch = text.match(/\{.*\}/s);
     if (!jsonMatch) {
-      return '{}'; // Return an empty object if no JSON is found
+      return '{}';
     }
 
-    // Clean up potential issues within the JSON block
     let sanitizedText = jsonMatch[0]
-      .replace(/[^\x20-\x7E\n\t]/g, '') // Remove non-printable ASCII characters
-      .replace(/\n/g, ' ') // Replace newlines with spaces
-      .replace(/\s{2,}/g, ' ') // Collapse multiple spaces
-      .replace(/"choices":\s*\[\s*{[^}]*?"text":\s*".*?"/g, ''); // Remove invalid "text" fields in choices
+      .replace(/[^\x20-\x7E\n\t]/g, '')
+      .replace(/\n/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .replace(/"choices":\s*\[\s*{[^}]*?"text":\s*".*?"/g, '');
 
     return sanitizedText;
   };
@@ -65,7 +63,11 @@ const PremadeStory = ({ token, onChoose }) => {
       try {
         const parsedSegment = JSON.parse(sanitizedSegment);
         setCurrentScene(parsedSegment);
-        setStoryProgress((prev) => [...prev, parsedSegment]);
+        setStoryProgress((prev) => {
+          const updatedProgress = [...prev, parsedSegment];
+          localStorage.setItem(`storyProgress_${storyId}`, JSON.stringify(updatedProgress));
+          return updatedProgress;
+        });
       } catch (error) {
         console.error('Failed to parse segment:', sanitizedSegment);
       }
@@ -77,21 +79,28 @@ const PremadeStory = ({ token, onChoose }) => {
       });
     }
     setIsLoading(false);
-  }, []);
+  }, [storyId]);
 
   useEffect(() => {
-    const initialPrompt = `Generate the opening scene in a romantic thriller with a JSON format:
-    {
-      "perspective": "<character perspective, e.g., 'Detective', 'Lover', or 'Villain'>",
-      "text": "<detailed scene description>",
-      "choices": [
-        {"option": "<player choice>"},
-        {"option": "<another player choice>"}
-      ]
-    }`;
+    const savedProgress = localStorage.getItem(`storyProgress_${storyId}`);
+    if (savedProgress) {
+      const parsedProgress = JSON.parse(savedProgress);
+      setStoryProgress(parsedProgress);
+      setCurrentScene(parsedProgress[parsedProgress.length - 1]);
+    } else {
+      const initialPrompt = `Generate the opening scene in a romantic thriller with a JSON format:
+      {
+        "perspective": "<character perspective, e.g., 'Detective', 'Lover', or 'Villain'>",
+        "text": "<detailed scene description>",
+        "choices": [
+          {"option": "<player choice>"},
+          {"option": "<another player choice>"}
+        ]
+      }`;
 
-    generateScene(initialPrompt);
-  }, [generateScene]);
+      generateScene(initialPrompt);
+    }
+  }, [generateScene, storyId]);
 
   const handleChoice = (choice) => {
     setLastChoice(choice.option);
@@ -119,6 +128,9 @@ const PremadeStory = ({ token, onChoose }) => {
     generateScene(nextPrompt);
   };
 
+  // Calculate progress percentage
+  const progressPercentage = (storyProgress.length / sceneLimit) * 100;
+
   return (
     <div>
       {isLoading ? <div>Loading...</div> : (
@@ -136,9 +148,13 @@ const PremadeStory = ({ token, onChoose }) => {
           </div>
         )
       )}
+      
+      <div className="progress-bar-container">
+      <div className="progress-bar-fill" style={{ width: `${progressPercentage}%` }} />
+      </div>
+
     </div>
   );
 };
 
 export default PremadeStory;
-
