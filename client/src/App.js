@@ -100,8 +100,8 @@ function App() {
         <div className="app-container">
           <Routes>
             <Route path="/dashboard" element={<Dashboard onLogout={handleLogout} />} />
-            <Route path="/generate-story" element={<StoryGenerator />} />
-            <Route path="/story/:storyId" element={<PremadeStory token={token} onChoose={handleChoose} />} />
+            <Route path="/generate-story" element={<StoryGenerator onLogout={handleLogout}/>} />
+            <Route path="/story/:storyId" element={<PremadeStory token={token} onChoose={handleChoose} onLogout={handleLogout}/>} />
             <Route path="*" element={<Navigate to="/dashboard" />} />
           </Routes>
         </div>

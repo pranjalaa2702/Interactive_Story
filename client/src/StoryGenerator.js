@@ -4,7 +4,7 @@ import './StoryText.css';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ClipLoader } from 'react-spinners'; // For loading spinner
 
-const StoryGenerator = ({ token, onChoose }) => {
+const StoryGenerator = ({ token, onChoose, onLogout }) => {
   const { storyId } = useParams();
   const [storyName, setStoryName] = useState('');
   const [currentScene, setCurrentScene] = useState(null);
@@ -158,6 +158,21 @@ const StoryGenerator = ({ token, onChoose }) => {
 
   return (
     <div>
+      <header>
+        <nav>
+          <div className="logo">
+            <h1>Tell Me Why</h1>
+          </div>
+          <ul className="nav-links">
+            <li><a href="./../dashboard#stories">Stories</a></li>
+            <li><a href="./../dashboard#about">About Us</a></li>
+            <li><a href="./../dashboard#contact">Contact</a></li>
+            <li>
+              <button className="logout-btn" onClick={onLogout}>Logout</button>
+            </li>
+          </ul>
+        </nav>
+      </header>
       {!promptSubmitted ? (
         <div className="prompt-container">
           <input

@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import "./StoryText.css";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const PremadeStory = ({ token, onChoose }) => {
+const PremadeStory = ({ token, onChoose, onLogout }) => {
   const { storyId } = useParams();
   const [currentScene, setCurrentScene] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -132,7 +132,21 @@ const PremadeStory = ({ token, onChoose }) => {
   const progressPercentage = (storyProgress.length / sceneLimit) * 100;
 
   return (
-    <div>
+    <div><header>
+    <nav>
+      <div className="logo">
+        <h1>Tell Me Why</h1>
+      </div>
+      <ul className="nav-links">
+        <li><a href="./../dashboard#stories">Stories</a></li>
+        <li><a href="./../dashboard#about">About Us</a></li>
+        <li><a href="./../dashboard#contact">Contact</a></li>
+        <li>
+          <button className="logout-btn" onClick={onLogout}>Logout</button>
+        </li>
+      </ul>
+    </nav>
+  </header>
       {isLoading ? <div>Loading...</div> : (
         currentScene && (
           <div className="story-text">

@@ -5,6 +5,7 @@ import love from './love.jfif.jpg';
 import king from './king.jpg';
 import bg from './homepage_pic.jpg';
 import det from './detective_pic1.jpg';
+import quest from './questionmark.jpg';
 
 const Dashboard = ({ onLogout }) => {
   const [userStories, setUserStories] = useState([]);
@@ -78,6 +79,7 @@ const Dashboard = ({ onLogout }) => {
           {/* User-Created Stories */}
           {userStories.map((story) => (
             <div className="story-card" key={story.id}>
+              <img src={quest} alt="Story 3" />
               <h3>{story.name}</h3>
               <p>Custom story created by you.</p>
               <Link to={`/story/${story.id}`}>
