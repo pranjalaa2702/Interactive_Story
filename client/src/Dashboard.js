@@ -107,7 +107,7 @@ const Dashboard = ({ onLogout }) => {
       <section id="contact" className="contact-us">
         <h2>Contact Us</h2>
         <p>For suggestions and queries, contact:</p>
-        <p><strong>Pranjalaa Rai</strong>, <strong>Pranav Rajesh</strong>, and <strong>Roshni Ramesh</strong></p>
+        <p><strong>Pranjalaa Rai</strong>, <strong>Pranav Rajesh</strong>, and <strong>Roshini Ramesh</strong></p>
         <p>Email: <a href="mailto:metamorphosisrestaurant365@gmail.com">metamorphosisrestaurant365@gmail.com</a></p>
       </section>
 
