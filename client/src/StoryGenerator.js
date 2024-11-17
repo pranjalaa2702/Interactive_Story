@@ -189,7 +189,7 @@ const StoryGenerator = ({ token, onChoose, onLogout }) => {
             cols="50"
             className="user-prompt"
           />
-          <button onClick={handleStartStory}>Start Story</button>
+          <button className="start" onClick={handleStartStory}>Start Story</button>
         </div>
       ) : isLoading ? (
         <div className="loading-spinner">
@@ -223,7 +223,7 @@ const StoryGenerator = ({ token, onChoose, onLogout }) => {
       </div>
 
       <div className="restart-container">
-        <button onClick={() => window.location.reload()}>Restart Story</button>
+        <button className="restart" onClick={() => window.location.reload()}>Restart Story</button>
       </div>
     </div>
   );

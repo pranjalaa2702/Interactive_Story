@@ -51,3 +51,25 @@
   height: 100%;
   background-color: #5d4037;
 }
+
+input[type="text"], 
+textarea {
+  width: 80%;
+  margin: 10px auto;
+  padding: 14px;  
+  font-size: 16px;
+  border: 2px solid #ccc;
+  outline: none;
+  background-color: #f7f7f7; 
+  border-radius: 8px; 
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);  
+  min-height: 50px; 
+}
+
+input[type="text"]:focus, 
+textarea:focus {
+  border-color: #5d4037; 
+  background-color: #fffbe6; 
+  box-shadow: 0 0 8px rgba(93, 64, 55, 0.8);
+}
+

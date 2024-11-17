@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';  
 import "./StoryText.css";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -9,21 +9,26 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [lastChoice, setLastChoice] = useState(null);
   const [storyProgress, setStoryProgress] = useState([]);
+  const [storyOver, setStoryOver] = useState(false);  
   const sceneLimit = 30;
+
+  const navigate = useNavigate();  
 
   const genAI = new GoogleGenerativeAI("AIzaSyDFX-jeNr095kCQ_nqInr6mcxjLeePQZtI");
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
+  
   const generateStorySegment = async (prompt) => {
     try {
+     
       const response = await model.generateContent(prompt);
       return response.response.text();
     } catch (error) {
       console.error('Gemini API error:', error);
-      const retryPrompt = `Please generate a scene in a romantic thriller with simpler language, formatted as JSON:
+      const retryPrompt = `Please generate a concise and impactful scene (maximum 150 words) in a romantic thriller, formatted as JSON:
       {
         "perspective": "<character perspective>",
-        "text": "<scene description>",
+        "text": "<short, meaningful scene description>",
         "choices": [
           {"option": "<player choice>"},
           {"option": "<alternate choice>"}
@@ -39,6 +44,7 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
     }
   };
 
+  // Function to sanitize the JSON response from the API
   const sanitizeJson = (text) => {
     const jsonMatch = text.match(/\{.*\}/s);
     if (!jsonMatch) {
@@ -54,6 +60,7 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
     return sanitizedText;
   };
 
+  // Function to generate a scene based on a prompt
   const generateScene = useCallback(async (prompt) => {
     setIsLoading(true);
     const segment = await generateStorySegment(prompt);
@@ -81,6 +88,7 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
     setIsLoading(false);
   }, [storyId]);
 
+  // Effect to load saved progress or generate the initial scene
   useEffect(() => {
     const savedProgress = localStorage.getItem(`storyProgress_${storyId}`);
     if (savedProgress) {
@@ -88,10 +96,10 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
       setStoryProgress(parsedProgress);
       setCurrentScene(parsedProgress[parsedProgress.length - 1]);
     } else {
-      const initialPrompt = `Generate the opening scene in a romantic thriller with a JSON format:
+      const initialPrompt = `Generate the opening scene of a romantic thriller in 2-3 sentences (max 150 words), in JSON format:
       {
         "perspective": "<character perspective, e.g., 'Detective', 'Lover', or 'Villain'>",
-        "text": "<detailed scene description>",
+        "text": "<short, impactful scene description that grabs attention>",
         "choices": [
           {"option": "<player choice>"},
           {"option": "<another player choice>"}
@@ -102,23 +110,21 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
     }
   }, [generateScene, storyId]);
 
+  // Function to handle player's choice
   const handleChoice = (choice) => {
     setLastChoice(choice.option);
 
     if (storyProgress.length >= sceneLimit) {
-      setCurrentScene({
-        perspective: "Narrator",
-        text: "The story has reached its thrilling conclusion. Thank you for playing!",
-        choices: []
-      });
+      // Set story over when the limit is reached
+      setStoryOver(true);
       return;
     }
 
     const previousScenes = storyProgress.map(scene => scene.text).join(' ');
-    const nextPrompt = `Based on previous scenes: "${previousScenes}" and user's choice "${choice.option}", generate the next scene in JSON format:
+    const nextPrompt = `Based on previous scenes: "${previousScenes}" and the user's choice "${choice.option}", generate the next scene in, formatted as JSON:
     {
       "perspective": "<character perspective>",
-      "text": "<scene description>",
+      "text": "<brief but meaningful scene description>",
       "choices": [
         {"option": "<player choice>"},
         {"option": "<alternate choice>"}
@@ -128,27 +134,52 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
     generateScene(nextPrompt);
   };
 
-  // Calculate progress percentage
+  // Handle Restart or Go to Homepage
+  const handleRestart = () => {
+    // Clear progress and reset state
+    setStoryProgress([]);
+    setStoryOver(false);
+    localStorage.setItem(`storyProgress_${storyId}`, JSON.stringify([]));
+    const initialPrompt = `Generate the opening scene of a romantic thriller in 2-3 sentences (max 150 words), in JSON format:
+    {
+      "perspective": "<character perspective, e.g., 'Detective', 'Lover', or 'Villain'>",
+      "text": "<short, impactful scene description that grabs attention>",
+      "choices": [
+        {"option": "<player choice>"},
+        {"option": "<another player choice>"}
+      ]
+    }`;
+
+    generateScene(initialPrompt);
+  };
+
+  const handleGoHome = () => {
+    
+    navigate("/");  
+  };
+
   const progressPercentage = (storyProgress.length / sceneLimit) * 100;
 
   return (
-    <div><header>
-    <nav>
-      <div className="logo">
-        <h1>Tell Me Why</h1>
-      </div>
-      <ul className="nav-links">
-        <li><a href="./../dashboard#stories">Stories</a></li>
-        <li><a href="./../dashboard#about">About Us</a></li>
-        <li><a href="./../dashboard#contact">Contact</a></li>
-        <li>
-          <button className="logout-btn" onClick={onLogout}>Logout</button>
-        </li>
-      </ul>
-    </nav>
-  </header>
+    <div>
+      <header>
+        <nav>
+          <div className="logo">
+            <h1>Tell Me Why</h1>
+          </div>
+          <ul className="nav-links">
+            <li><a href="./../dashboard#stories">Stories</a></li>
+            <li><a href="./../dashboard#about">About Us</a></li>
+            <li><a href="./../dashboard#contact">Contact</a></li>
+            <li>
+              <button className="logout-btn" onClick={onLogout}>Logout</button>
+            </li>
+          </ul>
+        </nav>
+      </header>
+
       {isLoading ? <div>Loading...</div> : (
-        currentScene && (
+        currentScene && !storyOver ? (
           <div className="story-text">
             <p><strong>Perspective:</strong> {currentScene.perspective}</p>
             <p><strong>Scene:</strong> {currentScene.text}</p>
@@ -160,13 +191,20 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
               ))}
             </div>
           </div>
+        ) : (
+          <div className="story-over">
+            <p>The story has reached its thrilling conclusion!</p>
+            <div>
+              <button onClick={handleRestart}>Start Over</button>
+              <button onClick={handleGoHome}>Go to Homepage</button>
+            </div>
+          </div>
         )
       )}
-      
-      <div className="progress-bar-container">
-      <div className="progress-bar-fill" style={{ width: `${progressPercentage}%` }} />
-      </div>
 
+      <div className="progress-bar-container">
+        <div className="progress-bar-fill" style={{ width: `${progressPercentage}%` }} />
+      </div>
     </div>
   );
 };
