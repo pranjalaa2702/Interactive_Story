@@ -8,8 +8,11 @@ import det from './detective_pic1.jpg';
 import quest from './questionmark.jpg';
 
 const Dashboard = ({ onLogout }) => {
-  const [userStories, setUserStories] = useState([]);
+  const [userStories, setUserStories] = useState([]); //Stores user-made stories
+  const [storyCount, setStoryCount] = useState(3); //Initialising storyCount to 3 as there are 3 premade stories
+  const year = new Date().getFullYear();
 
+  //Retrieves user-made storues from local storage
   useEffect(() => {
     const savedStories = JSON.parse(localStorage.getItem('userStories')) || [];
     setUserStories(savedStories);
@@ -23,6 +26,8 @@ const Dashboard = ({ onLogout }) => {
           <div className="logo">
             <h1>Tell Me Why</h1>
           </div>
+
+          {/* Links to the respective sections of the page by using its id */}
           <ul className="nav-links">
             <li><a href="#stories">Stories</a></li>
             <li><a href="#about">About Us</a></li>
@@ -76,17 +81,18 @@ const Dashboard = ({ onLogout }) => {
             </Link>
           </div>
 
-          {/* User-Created Stories */}
-          {userStories.map((story) => (
-            <div className="story-card" key={story.id}>
+          {/* User-Created Stories: Path changes dynamically as each story is added*/}
+          {userStories.map((story) => {
+            setStoryCount({storyCount: story.storyCount + 1});
+            return (<div className="story-card" key={story.id}>
               <img src={quest} alt="Story 3" />
               <h3>{story.name}</h3>
               <p>Custom story created by you.</p>
-              <Link to={`/story/${story.id}`}>
+              <Link to={`/story/${story.storyCount}`}>
                 <button className="read-more-btn">Play Now</button>
               </Link>
             </div>
-          ))}
+          )})}
         </div>
       </section>
 
@@ -104,9 +110,9 @@ const Dashboard = ({ onLogout }) => {
         <p>Email: <a href="mailto:metamorphosisrestaurant365@gmail.com">metamorphosisrestaurant365@gmail.com</a></p>
       </section>
 
-      {/* Footer Section */}
+      {/* Footer Section: Year changes based on current year*/}
       <footer>
-        <p>© 2024 Tell Me Why. All Rights Reserved.</p>
+        <p>© {year} Tell Me Why. All Rights Reserved.</p>
         <ul className="footer-links">
           <li><a href="#privacy">Privacy Policy</a></li>
           <li><a href="#terms">Terms of Service</a></li>

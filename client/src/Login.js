@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import './login.css'; // Import your CSS file here
-import detectivePic from './detective_pic.jpg'; // Adjust the path as necessary based on your directory structure
+import './login.css';
+import detectivePic from './detective_pic.jpg';
 
 function Login({ onLogin }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
+  const [email, setEmail] = useState(''); //Stores email
+  const [password, setPassword] = useState(''); //Stores password
+  const [message, setMessage] = useState(''); //Stores message (which gets generated later in the code)
 
   const handleLogin = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); //Prevents default behaviour
 
+    //Sending a post request to verify a user and log them in.
     try {
       const response = await fetch('http://localhost:3001/api/auth/login', {
         method: 'POST',
@@ -20,13 +21,17 @@ function Login({ onLogin }) {
         body: JSON.stringify({ email, password }),
       });
 
+      //Waiting for the response and validating it
       const data = await response.json();
       if (response.ok) {
-        onLogin(data.token); // Call the onLogin function passed as prop
+        onLogin(data.token);
       } else {
         setMessage(data.message || 'Login failed. Please try again.');
       }
-    } catch (error) {
+    } 
+
+    //Triggered when there is an error in posting
+    catch (error) {
       console.error('Error:', error);
       setMessage('Network error: Please check your connection.');
     }
@@ -36,8 +41,10 @@ function Login({ onLogin }) {
     <div className="container-3" id='login-box'>
       <div className="login-box">
         <h2>Login</h2>
-        {message && <p style={{ color: 'red' }}>{message}</p>}
+        {message && <p style={{ color: 'red' }}>{message}</p>} {/* Error message */}
         <form onSubmit={handleLogin}>
+
+          {/* Every input field stores its data in its respective state when change is triggered */}
           <input
             type="email"
             placeholder="Email"
@@ -53,13 +60,12 @@ function Login({ onLogin }) {
             required
           />
           
-          {/* Forgot Password Link */}
+          {/* Forgot password */}
           <Link to="/forgot-password" className="forgot-password">Forgot Password?</Link>
           
-          {/* Login Button */}
           <button type="submit" className="login-btn">Login</button>
           
-          {/* Signup Link with "Don't have an account?" text */}
+          {/* Signup*/}
           <div className="signup-section">
             <span>Don't have an account? </span>
             <Link to="/signup" className="signup-link">Signup</Link>
@@ -68,7 +74,7 @@ function Login({ onLogin }) {
       </div>
       <div className="animation-box">
         <img
-          src={detectivePic} // Replace with your icon's URL
+          src={detectivePic}
           alt="Detective Icon"
           className="detective-icon"
         />

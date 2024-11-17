@@ -11,21 +11,22 @@ import backgroundMusic from './Kingdom_dance.mp3';
 import './App.css';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [token, setToken] = useState(null);
-  const [isMuted, setIsMuted] = useState(false);
-  const navigate = useNavigate();
-  const audioRef = useRef(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); //Login State
+  const [token, setToken] = useState(null); //?
+  const [isMuted, setIsMuted] = useState(false); //For audio, muted or not
+  const navigate = useNavigate(); //Used to navigate between pages
+  const audioRef = useRef(null); //Ref because we dont want it to re-render the component (like useState)
 
-  // Check if the user is already logged in by retrieving the token from localStorage
+  //Gets the auth token that the browser stores, so that when a user has logged in in the previous session, they dont have to re-login
   useEffect(() => {
-    const storedToken = localStorage.getItem('authToken');
+    const storedToken = localStorage.getItem('authToken'); 
     if (storedToken) {
       setIsLoggedIn(true);
       setToken(storedToken);
     }
   }, []);
 
+  //Based on the isMuted state, it triggers the sound.
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = 0.5;
@@ -33,25 +34,27 @@ function App() {
     }
   }, [isMuted]);
 
+  //This is the reason we don't need to re-login. It stores if the user has logged in or not and skips that process for us
   const handleLoginSuccess = (authToken) => {
-    // Store the token in localStorage for persistence
     localStorage.setItem('authToken', authToken);
     setIsLoggedIn(true);
     setToken(authToken);
   };
 
+  //Clears login state when someone logs out and navigates them to the login page.
   const handleLogout = () => {
-    // Clear the token from localStorage and update the state
     localStorage.removeItem('authToken');
     setIsLoggedIn(false);
     setToken(null);
-    navigate('/login'); // Navigate to login after logging out
+    navigate('/login');
   };
 
+  //Toggling between unmute and mute. Remember that starting is unmuted.
   const toggleMute = () => {
     setIsMuted((prev) => !prev);
   };
 
+  //Navigating to the choice the user made
   const handleChoose = (choice) => {
     console.log("User chose:", choice);
     navigate(`/story/${choice}`);
@@ -88,6 +91,7 @@ function App() {
         </>
       )}
 
+      {/* If user is logged in, they are taken to dashboard. Else, to login page. The star path is the default path incase a user enters an invalid path. */}
       {!isLoggedIn ? (
         <Routes>
           <Route path="/signup" element={<Signup />} />

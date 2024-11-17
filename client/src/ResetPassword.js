@@ -4,35 +4,39 @@ import { useParams } from 'react-router-dom';
 import './ForgotPassword.css';
 
 function ResetPassword() {
-  const { token } = useParams(); // Extract token from URL
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [message, setMessage] = useState('');
+  const { token } = useParams(); //Get token from url
+  const [newPassword, setNewPassword] = useState(''); //Store new password
+  const [confirmPassword, setConfirmPassword] = useState(''); //Store confirmed new password
+  const [message, setMessage] = useState(''); //Store message
 
   const handleReset = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); //Prevent default behaviour
 
+    //Check if new password and confirmed new password are equal
     if (newPassword !== confirmPassword) {
       setMessage('Passwords do not match.');
       return;
     }
 
+    //Sending a post request to verify if the user comes from the right reset password link
     try {
       const response = await fetch(`http://localhost:3001/api/auth/reset-password/${token}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ password: newPassword }), // Send the new password
+        body: JSON.stringify({ password: newPassword }),
       });
 
+      //Waiting for the response and giving appropriate response
       const data = await response.json();
       if (response.ok) {
         setMessage('Password reset successfully. You can now log in with your new password.');
       } else {
         setMessage(data.message || 'Something went wrong. Please try again.');
       }
-    } catch (error) {
+    } 
+    catch (error) {
       console.error('Error:', error);
       setMessage('Network error: Please check your connection.');
     }
@@ -41,8 +45,10 @@ function ResetPassword() {
   return (
     <div className="container-2" id='forgot-password'>
       <h2>Reset Password</h2>
-      {message && <p style={{ color: 'red' }}>{message}</p>}
+      {message && <p style={{ color: 'red' }}>{message}</p>} {/* Message indicating next steps */}
       <form onSubmit={handleReset}>
+
+        {/* Email stored in email state when change is triggered */}
         <input
           type="password"
           placeholder="New Password"
