@@ -14,10 +14,9 @@ const StoryGenerator = ({ token, onChoose, onLogout }) => {
   const [userPrompt, setUserPrompt] = useState('');
   const [promptSubmitted, setPromptSubmitted] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false); // Button disable state
-  const sceneLimit = 30;
 
   // Assuming the API key is stored in environment variables
-  //const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
+  // const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
   const genAI = new GoogleGenerativeAI('AIzaSyDFX-jeNr095kCQ_nqInr6mcxjLeePQZtI');
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
@@ -64,7 +63,7 @@ const StoryGenerator = ({ token, onChoose, onLogout }) => {
 
       The story starts with: "${prompt}"
     `;
-    
+
     const segment = await generateStorySegment(aiPrompt);
     if (segment) {
       const sanitizedSegment = sanitizeJson(segment);
@@ -131,15 +130,6 @@ const StoryGenerator = ({ token, onChoose, onLogout }) => {
     setLastChoice(choice.option);
     setIsButtonDisabled(true); // Disable button after choice
 
-    if (storyProgress.length >= sceneLimit) {
-      setCurrentScene({
-        perspective: 'Narrator',
-        text: 'The story has reached its thrilling conclusion. Thank you for playing!',
-        choices: []
-      });
-      return;
-    }
-
     const previousScenes = storyProgress.map(scene => scene.text).join(' ');
     const nextPrompt = `Based on previous scenes: "${previousScenes}" and user's choice "${choice.option}", generate the next scene in JSON format:
     {
@@ -153,8 +143,6 @@ const StoryGenerator = ({ token, onChoose, onLogout }) => {
 
     generateScene(nextPrompt);
   };
-
-  const progressPercentage = (storyProgress.length / sceneLimit) * 100;
 
   return (
     <div>
@@ -218,8 +206,7 @@ const StoryGenerator = ({ token, onChoose, onLogout }) => {
       )}
 
       <div className="progress-bar-container">
-        <div className="progress-bar-fill" style={{ width: `${progressPercentage}%` }} />
-        <p>{`Progress: ${storyProgress.length} / ${sceneLimit}`}</p>
+        <p>{`Scenes generated: ${storyProgress.length}`}</p>
       </div>
 
       <div className="restart-container">

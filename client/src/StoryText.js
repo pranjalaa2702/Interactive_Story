@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';  
+import { useParams, useNavigate } from 'react-router-dom';
 import "./StoryText.css";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -9,18 +9,15 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [lastChoice, setLastChoice] = useState(null);
   const [storyProgress, setStoryProgress] = useState([]);
-  const [storyOver, setStoryOver] = useState(false);  
-  const sceneLimit = 30;
+  const [storyOver, setStoryOver] = useState(false);
 
-  const navigate = useNavigate();  
+  const navigate = useNavigate();
 
   const genAI = new GoogleGenerativeAI("AIzaSyDFX-jeNr095kCQ_nqInr6mcxjLeePQZtI");
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-  
   const generateStorySegment = async (prompt) => {
     try {
-     
       const response = await model.generateContent(prompt);
       return response.response.text();
     } catch (error) {
@@ -75,6 +72,11 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
           localStorage.setItem(`storyProgress_${storyId}`, JSON.stringify(updatedProgress));
           return updatedProgress;
         });
+
+        // Check if the AI has naturally concluded the story
+        if (parsedSegment.text.toLowerCase().includes("the end") || parsedSegment.text.toLowerCase().includes("conclusion")) {
+          setStoryOver(true);
+        }
       } catch (error) {
         console.error('Failed to parse segment:', sanitizedSegment);
       }
@@ -114,17 +116,11 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
   const handleChoice = (choice) => {
     setLastChoice(choice.option);
 
-    if (storyProgress.length >= sceneLimit) {
-      // Set story over when the limit is reached
-      setStoryOver(true);
-      return;
-    }
-
     const previousScenes = storyProgress.map(scene => scene.text).join(' ');
     const nextPrompt = `Based on previous scenes: "${previousScenes}" and the user's choice "${choice.option}", generate the next scene in, formatted as JSON:
     {
       "perspective": "<character perspective>",
-      "text": "<brief but meaningful scene description>",
+      "text": "<brief but meaningful scene description. If the story is close to concluding, include a hint of resolution or closure.>",
       "choices": [
         {"option": "<player choice>"},
         {"option": "<alternate choice>"}
@@ -146,19 +142,17 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
       "text": "<short, impactful scene description that grabs attention>",
       "choices": [
         {"option": "<player choice>"},
-        {"option": "<another player choice>"}
-      ]
-    }`;
+        {"option": "<another player choice>"
+      }`;
 
     generateScene(initialPrompt);
   };
 
   const handleGoHome = () => {
-    
-    navigate("/");  
+    navigate("/");
   };
 
-  const progressPercentage = (storyProgress.length / sceneLimit) * 100;
+  const progressPercentage = (storyProgress.length / 50) * 100; // Adjusted progress bar calculation
 
   return (
     <div>
