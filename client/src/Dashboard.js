@@ -83,12 +83,12 @@ const Dashboard = ({ onLogout }) => {
 
           {/* User-Created Stories: Path changes dynamically as each story is added*/}
           {userStories.map((story) => {
-            setStoryCount({storyCount: story.storyCount + 1});
+            // setStoryCount({storyCount: story.storyCount + 1});
             return (<div className="story-card" key={story.id}>
               <img src={quest} alt="Story 3" />
               <h3>{story.name}</h3>
               <p>Custom story created by you.</p>
-              <Link to={`/story/${story.storyCount}`}>
+              <Link to={`/story/${story.id}`}>
                 <button className="read-more-btn">Play Now</button>
               </Link>
             </div>
