@@ -63,6 +63,7 @@ function Signup() {
             value={username} 
             onChange={(event) => setUsername(event.target.value)} 
             required 
+            id='username'
           />
           <input 
             type="email" 

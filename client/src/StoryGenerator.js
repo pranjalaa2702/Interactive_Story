@@ -4,10 +4,6 @@ import './StoryText.css';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ClipLoader } from 'react-spinners'; // For loading spinner
 
-//To Do in this file
-//1. Change progress storage from local storage to mongo
-//2. Move Gemini API to env
-
 const StoryGenerator = ({ token, onChoose, onLogout }) => {
   const { storyId } = useParams(); //Stores story id
   const [storyName, setStoryName] = useState(''); //Stores story name
@@ -160,7 +156,7 @@ const StoryGenerator = ({ token, onChoose, onLogout }) => {
   };
 
   return (
-    <div>
+    <div className='main'>
       <header>
         <nav>
           <div className="logo">

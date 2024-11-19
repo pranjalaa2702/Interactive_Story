@@ -47,6 +47,10 @@ nav .logo h1 {
     letter-spacing: 0.125rem;
 }
 
+.logoText{
+    text-align: left;
+}
+
 nav .nav-links {
     list-style: none;
     display: flex;
@@ -61,6 +65,8 @@ nav .nav-links li a {
     padding-bottom: 0.25rem;
     border-bottom: 2px solid transparent;
     transition: color 0.3s ease, border-bottom 0.3s ease;
+    width: fit-content;
+    display: flex
 }
 
 nav .nav-links li a:hover {

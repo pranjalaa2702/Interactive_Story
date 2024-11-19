@@ -23,7 +23,7 @@ const Dashboard = ({ onLogout }) => {
       <header>
         <nav>
           <div className="logo">
-            <h1>Tell Me Why</h1>
+            <h1 className='logoText'>Tell Me Why</h1>
           </div>
 
           {/* Links to the respective sections of the page by using its id */}
