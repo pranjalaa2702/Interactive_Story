@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Route, Routes, Navigate, useNavigate } from 'react-router-dom'; 
-import PremadeStory from './StoryText';
+import PremadeStory from './PremadeStory';
 import Signup from './Signup';
 import Login from './Login';
 import ForgotPassword from './ForgotPassword';

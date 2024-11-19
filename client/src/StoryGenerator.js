@@ -4,34 +4,41 @@ import './StoryText.css';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ClipLoader } from 'react-spinners'; // For loading spinner
 
-const StoryGenerator = ({ token, onChoose, onLogout }) => {
-  const { storyId } = useParams();
-  const [storyName, setStoryName] = useState('');
-  const [currentScene, setCurrentScene] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [lastChoice, setLastChoice] = useState(null);
-  const [storyProgress, setStoryProgress] = useState([]);
-  const [userPrompt, setUserPrompt] = useState('');
-  const [promptSubmitted, setPromptSubmitted] = useState(false);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false); // Button disable state
+//To Do in this file
+//1. Change progress storage from local storage to mongo
+//2. Move Gemini API to env
 
-  // Assuming the API key is stored in environment variables
-  // const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
+const StoryGenerator = ({ token, onChoose, onLogout }) => {
+  const { storyId } = useParams(); //Stores story id
+  const [storyName, setStoryName] = useState(''); //Stores story name
+  const [currentScene, setCurrentScene] = useState(null); //Stores current scene
+  const [isLoading, setIsLoading] = useState(false); //Stores loading status
+  const [lastChoice, setLastChoice] = useState(null); //Stores the last choice
+  const [storyProgress, setStoryProgress] = useState([]); //Stores the progress of the story
+  const [userPrompt, setUserPrompt] = useState(''); //Stores user prompt
+  const [promptSubmitted, setPromptSubmitted] = useState(false); //Stores the prompt to sent to gemini
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false); //Stores button state
+
+  //To store API key in environment variables
+  //const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
   const genAI = new GoogleGenerativeAI('AIzaSyDFX-jeNr095kCQ_nqInr6mcxjLeePQZtI');
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
+  //Connecting to Gemini and checking the response
   const generateStorySegment = async (prompt) => {
     try {
       const response = await model.generateContent(prompt);
       const segment = response.response.text();
       console.log('API Response:', segment);
       return segment;
-    } catch (error) {
+    } 
+    catch (error) {
       console.error('Gemini API error:', error);
       return '';
     }
   };
 
+  //Sanitizing the output
   const sanitizeJson = (text) => {
     const jsonMatch = text.match(/\{.*\}/s);
     if (!jsonMatch) {
@@ -48,36 +55,28 @@ const StoryGenerator = ({ token, onChoose, onLogout }) => {
     return sanitizedText;
   };
 
+  //useCallback is a cache function that doesn't need to recalculate values every time and gives faster outputs
   const generateScene = useCallback(async (prompt) => {
     setIsLoading(true);
-    const aiPrompt = `
-      Generate a JSON object for the next story segment. The object should look like this:
-      {
-        "perspective": "<character perspective>",
-        "text": "<scene description>",
-        "choices": [
-          {"option": "<player choice>"},
-          {"option": "<alternate choice>"}
-        ]
-      }
+    const aiPrompt = prompt;
 
-      The story starts with: "${prompt}"
-    `;
-
+    //Passing the prompt through the generateStory function and getting the Gemini output which is sanitized so that JSON parser can work on it
     const segment = await generateStorySegment(aiPrompt);
     if (segment) {
       const sanitizedSegment = sanitizeJson(segment);
       try {
         const parsedSegment = JSON.parse(sanitizedSegment);
+
+        //Checking if all outputs from parser are useable. If yes, then setting current scene and updating the progress
         if (parsedSegment.perspective && parsedSegment.text && Array.isArray(parsedSegment.choices)) {
           setCurrentScene(parsedSegment);
           setStoryProgress((prev) => {
             const updatedProgress = [...prev, parsedSegment];
-            localStorage.setItem(`storyProgress_${storyId}`, JSON.stringify(updatedProgress));
+            localStorage.setItem(`storyProgress_${storyId}`, JSON.stringify(updatedProgress)); //Change from localStorage to mongo
             return updatedProgress;
           });
 
-          // Save story to local storage only if the name is unique
+          //If the story hasn't been saved yet, save it
           const savedStories = JSON.parse(localStorage.getItem('userStories')) || [];
           if (!savedStories.find(story => story.name === storyName)) {
             const newStory = {
@@ -87,27 +86,27 @@ const StoryGenerator = ({ token, onChoose, onLogout }) => {
             };
             localStorage.setItem('userStories', JSON.stringify([...savedStories, newStory]));
           }
-        } else {
+        } 
+
+        //Error
+        else {
           throw new Error('Incomplete or invalid JSON structure');
         }
-      } catch (error) {
+      } 
+
+      //Error
+      catch (error) {
         console.error('Failed to parse JSON or invalid structure:', error, sanitizedSegment);
-        setCurrentScene({
-          perspective: 'Narrator',
-          text: 'An error occurred while generating the story. Please try again.',
-          choices: []
-        });
+        generateScene(prompt);
       }
-    } else {
-      setCurrentScene({
-        perspective: 'Narrator',
-        text: 'An error occurred in the story progression. Please try again.',
-        choices: []
-      });
+    } 
+    else {
+      generateScene(prompt);
     }
     setIsLoading(false);
   }, [storyId, storyName, storyProgress]);
 
+  //When user continues playing the game
   useEffect(() => {
     const savedProgress = localStorage.getItem(`storyProgress_${storyId}`);
     if (savedProgress) {
@@ -117,21 +116,37 @@ const StoryGenerator = ({ token, onChoose, onLogout }) => {
     }
   }, [storyId]);
 
+  //Handling error of when user doesn't provide name of story and prompt
   const handleStartStory = () => {
     if (!storyName.trim() || !userPrompt.trim()) {
       alert('Please fill in both the story name and the prompt.');
       return;
     }
     setPromptSubmitted(true);
-    generateScene(userPrompt);
+    const prompt = `
+      Please generate a concise and impactful scene (maximum 150 words) formatted as JSON:
+      {
+        "perspective": "<character perspective>",
+        "text": "<short, meaningful scene description>",
+        "choices": [
+          {"option": "<player choice>"},
+          {"option": "<alternate choice>"}
+        ]
+      }
+
+      The story starts with: "${userPrompt}"
+    `
+    generateScene(prompt);
   };
 
+  //Once user has picked options, the button is disabled and next scene is generated
   const handleChoice = (choice) => {
     setLastChoice(choice.option);
     setIsButtonDisabled(true); // Disable button after choice
 
     const previousScenes = storyProgress.map(scene => scene.text).join(' ');
-    const nextPrompt = `Based on previous scenes: "${previousScenes}" and user's choice "${choice.option}", generate the next scene in JSON format:
+    const nextPrompt = `The story is based on: ${userPrompt}
+    Based on previous scenes: "${previousScenes}" and user's choice "${choice.option}", generate the next concise and impactful scene (maximum 150 words) in JSON format:
     {
       "perspective": "<character perspective>",
       "text": "<scene description>",
@@ -161,6 +176,8 @@ const StoryGenerator = ({ token, onChoose, onLogout }) => {
           </ul>
         </nav>
       </header>
+
+      {/* If prompt hasn't been submitted yet, show the prompt container */}
       {!promptSubmitted ? (
         <div className="prompt-container">
           <input
@@ -179,11 +196,17 @@ const StoryGenerator = ({ token, onChoose, onLogout }) => {
           />
           <button className="start" onClick={handleStartStory}>Start Story</button>
         </div>
-      ) : isLoading ? (
+      )  
+      
+      // If Gemini is processing, isLoading is true and the spinner is activated
+      :isLoading ? (
         <div className="loading-spinner">
           <ClipLoader size={50} color={"#123abc"} />
         </div>
-      ) : (
+      ) 
+
+      //If not loading, scene is displayed
+      : (
         currentScene && (
           <div className="story-text">
             <p><strong>Perspective:</strong> {currentScene.perspective}</p>
@@ -205,10 +228,12 @@ const StoryGenerator = ({ token, onChoose, onLogout }) => {
         )
       )}
 
+      {/* Progress bar on the bottom right corner*/}
       <div className="progress-bar-container">
         <p>{`Scenes generated: ${storyProgress.length}`}</p>
       </div>
 
+      {/* Restart button */}
       <div className="restart-container">
         <button className="restart" onClick={() => window.location.reload()}>Restart Story</button>
       </div>

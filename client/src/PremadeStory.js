@@ -3,45 +3,39 @@ import { useParams, useNavigate } from 'react-router-dom';
 import "./StoryText.css";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+//To Do in this file
+//1. Loading spinner thing
+//2. Move Gemini API to env
+//3. Change to different prompts for each of the 3 premade stories
+//4. Change progress from local storage to mongo
+
 const PremadeStory = ({ token, onChoose, onLogout }) => {
-  const { storyId } = useParams();
-  const [currentScene, setCurrentScene] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [lastChoice, setLastChoice] = useState(null);
-  const [storyProgress, setStoryProgress] = useState([]);
-  const [storyOver, setStoryOver] = useState(false);
+  const { storyId } = useParams(); //Storing story id
+  const [currentScene, setCurrentScene] = useState(null); //Storing current scene
+  const [isLoading, setIsLoading] = useState(false); //Storing loading status
+  const [lastChoice, setLastChoice] = useState(null); //Storing the last choice
+  const [storyProgress, setStoryProgress] = useState([]); //Storing progress
+  const [storyOver, setStoryOver] = useState(false); //Storing if story completed or not
 
   const navigate = useNavigate();
 
+  //Gemini API
   const genAI = new GoogleGenerativeAI("AIzaSyDFX-jeNr095kCQ_nqInr6mcxjLeePQZtI");
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
+  //Generating story based on prompt which are premade.
   const generateStorySegment = async (prompt) => {
     try {
       const response = await model.generateContent(prompt);
       return response.response.text();
-    } catch (error) {
+    } 
+    catch (error) {
       console.error('Gemini API error:', error);
-      const retryPrompt = `Please generate a concise and impactful scene (maximum 150 words) in a romantic thriller, formatted as JSON:
-      {
-        "perspective": "<character perspective>",
-        "text": "<short, meaningful scene description>",
-        "choices": [
-          {"option": "<player choice>"},
-          {"option": "<alternate choice>"}
-        ]
-      }`;
-      try {
-        const retryResponse = await model.generateContent(retryPrompt);
-        return retryResponse.response.text();
-      } catch (retryError) {
-        console.error('Retry failed:', retryError);
-        return '';
-      }
+      generateStorySegment(prompt);
     }
   };
 
-  // Function to sanitize the JSON response from the API
+  // Sanitizing the JSON response from the API
   const sanitizeJson = (text) => {
     const jsonMatch = text.match(/\{.*\}/s);
     if (!jsonMatch) {
@@ -57,7 +51,7 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
     return sanitizedText;
   };
 
-  // Function to generate a scene based on a prompt
+  // Generating a scene based on a prompt
   const generateScene = useCallback(async (prompt) => {
     setIsLoading(true);
     const segment = await generateStorySegment(prompt);
@@ -77,15 +71,13 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
         if (parsedSegment.text.toLowerCase().includes("the end") || parsedSegment.text.toLowerCase().includes("conclusion")) {
           setStoryOver(true);
         }
-      } catch (error) {
+      } 
+      catch (error) {
         console.error('Failed to parse segment:', sanitizedSegment);
       }
-    } else {
-      setCurrentScene({
-        perspective: "Narrator",
-        text: "An error occurred in the story progression. Please try again.",
-        choices: []
-      });
+    } 
+    else {
+      generateScene(prompt);
     }
     setIsLoading(false);
   }, [storyId]);
@@ -112,12 +104,12 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
     }
   }, [generateScene, storyId]);
 
-  // Function to handle player's choice
+  // Handling player's choice
   const handleChoice = (choice) => {
     setLastChoice(choice.option);
 
     const previousScenes = storyProgress.map(scene => scene.text).join(' ');
-    const nextPrompt = `Based on previous scenes: "${previousScenes}" and the user's choice "${choice.option}", generate the next scene in, formatted as JSON:
+    const nextPrompt = `Based on previous scenes: "${previousScenes}" and the user's choice "${choice.option}", generate the next scene in 2-3 sentences (max 150 words), formatted as JSON:
     {
       "perspective": "<character perspective>",
       "text": "<brief but meaningful scene description. If the story is close to concluding, include a hint of resolution or closure.>",
