@@ -10,7 +10,9 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 //4. Change progress from local storage to mongo
 
 const PremadeStory = ({ token, onChoose, onLogout }) => {
-  const { storyId } = useParams(); //Storing story id
+  const { strStoryId } = useParams(); //Storing story id
+  const storyId = parseInt(strStoryId, 10);
+
   const [currentScene, setCurrentScene] = useState(null); //Storing current scene
   const [isLoading, setIsLoading] = useState(false); //Storing loading status
   const [lastChoice, setLastChoice] = useState(null); //Storing the last choice
@@ -24,14 +26,18 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   //Generating story based on prompt which are premade.
-  const generateStorySegment = async (prompt) => {
+  const generateStorySegment = async (prompt, retries = 3) => {
     try {
-      const response = await model.generateContent(prompt);
-      return response.response.text();
-    } 
-    catch (error) {
-      console.error('Gemini API error:', error);
-      generateStorySegment(prompt);
+        const response = await model.generateContent(prompt);
+        return response.response.text();
+    } catch (error) {
+        console.error('Gemini API error:', error);
+        if (retries > 0) {
+            return generateStorySegment(prompt, retries - 1);
+        } else {
+            console.error('Failed after retries:', error);
+            return null;
+        }
     }
   };
 
@@ -90,16 +96,40 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
       setStoryProgress(parsedProgress);
       setCurrentScene(parsedProgress[parsedProgress.length - 1]);
     } else {
-      const initialPrompt = `Generate the opening scene of a romantic thriller in 2-3 sentences (max 150 words), in JSON format:
-      {
-        "perspective": "<character perspective, e.g., 'Detective', 'Lover', or 'Villain'>",
-        "text": "<short, impactful scene description that grabs attention>",
-        "choices": [
-          {"option": "<player choice>"},
-          {"option": "<another player choice>"}
-        ]
-      }`;
-
+      let initialPrompt;
+      if (storyId === 1){
+        initialPrompt = `Generate the opening scene of an adventure mystery in 2-3 sentences (max 150 words), in JSON format:
+        {
+          "perspective": "<character perspective, e.g., 'Explorer', 'Scientist', or 'Historian'>",
+          "text": "<short, impactful scene description that sets the stage for discovery and danger>",
+          "choices": [
+            {"option": "<player choice>"},
+            {"option": "<another player choice>"}
+          ]
+        }`;
+      }
+      else if (storyId === 2){
+        initialPrompt = `Generate the opening scene of a romantic thriller in 2-3 sentences (max 150 words), in JSON format:
+        {
+          "perspective": "<character perspective, e.g., 'Protagonist', 'Mysterious Stranger', or 'Confidant'>",
+          "text": "<short, impactful scene description that blends suspense and romantic tension>",
+          "choices": [
+            {"option": "<player choice>"},
+            {"option": "<another player choice>"}
+          ]
+        }`;
+      }
+      else if (storyId === 3){
+        initialPrompt = `Generate the opening scene of a murder mystery thriller in 2-3 sentences (max 150 words), in JSON format:
+        {
+          "perspective": "<character perspective, e.g., 'Detective', 'Family Member', or 'Outsider'>",
+          "text": "<short, impactful scene description that blends suspense and intrigue>",
+          "choices": [
+            {"option": "<player choice>"},
+            {"option": "<another player choice>"}
+          ]
+        }`;
+      }
       generateScene(initialPrompt);
     }
   }, [generateScene, storyId]);
@@ -109,16 +139,40 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
     setLastChoice(choice.option);
 
     const previousScenes = storyProgress.map(scene => scene.text).join(' ');
-    const nextPrompt = `Based on previous scenes: "${previousScenes}" and the user's choice "${choice.option}", generate the next scene in 2-3 sentences (max 150 words), formatted as JSON:
+    let nextPrompt;
+    if (storyId === 1){
+      nextPrompt = `Based on previous scenes: "${previousScenes}" and the user's choice "${choice.option}", generate the next scene in 2-3 sentences (max 150 words), formatted as JSON:
+      {
+        "perspective": "<character perspective, e.g., 'Explorer', 'Guardian', or 'Outsider'>",
+        "text": "<brief but meaningful scene description. If the story is close to concluding, include a hint of resolution or closure, like uncovering a key artifact or restoring balance to the kingdom.>",
+        "choices": [
+          {"option": "<player choice>"},
+          {"option": "<another player choice>"}
+        ]
+      }`;
+    }
+    else if (storyId === 2){
+      nextPrompt = `Based on previous scenes: "${previousScenes}" and the user's choice "${choice.option}", generate the next scene in 2-3 sentences (max 150 words), formatted as JSON:
     {
-      "perspective": "<character perspective>",
-      "text": "<brief but meaningful scene description. If the story is close to concluding, include a hint of resolution or closure.>",
+      "perspective": "<character perspective, e.g., 'Lover', 'Spy', or 'Betrayer'>",
+      "text": "<brief but meaningful scene description. If the story is close to concluding, include a hint of resolution or closure, like a revelation about trust or betrayal in the relationship.>",
       "choices": [
         {"option": "<player choice>"},
-        {"option": "<alternate choice>"}
+        {"option": "<another player choice>"}
       ]
     }`;
-
+    }
+    else if (storyId === 3){
+      nextPrompt = `Based on previous scenes: "${previousScenes}" and the user's choice "${choice.option}", generate the next scene in 2-3 sentences (max 150 words), formatted as JSON:
+    {
+      "perspective": "<character perspective, e.g., 'Detective', 'Suspect', or 'Witness'>",
+      "text": "<brief but meaningful scene description. If the story is close to concluding, include a hint of resolution or closure, like uncovering a shocking truth or narrowing down the suspects.>",
+      "choices": [
+        {"option": "<player choice>"},
+        {"option": "<another player choice>"}
+      ]
+    }`;
+    }
     generateScene(nextPrompt);
   };
 
@@ -128,15 +182,40 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
     setStoryProgress([]);
     setStoryOver(false);
     localStorage.setItem(`storyProgress_${storyId}`, JSON.stringify([]));
-    const initialPrompt = `Generate the opening scene of a romantic thriller in 2-3 sentences (max 150 words), in JSON format:
-    {
-      "perspective": "<character perspective, e.g., 'Detective', 'Lover', or 'Villain'>",
-      "text": "<short, impactful scene description that grabs attention>",
-      "choices": [
-        {"option": "<player choice>"},
-        {"option": "<another player choice>"
+    let initialPrompt;
+    if (storyId === 1){
+      initialPrompt = `Generate the opening scene of an adventure mystery in 2-3 sentences (max 150 words), in JSON format:
+      {
+        "perspective": "<character perspective, e.g., 'Explorer', 'Scientist', or 'Historian'>",
+        "text": "<short, impactful scene description that sets the stage for discovery and danger>",
+        "choices": [
+          {"option": "<player choice>"},
+          {"option": "<another player choice>"}
+        ]
       }`;
-
+    }
+    else if (storyId === 2){
+      initialPrompt = `Generate the opening scene of a romantic thriller in 2-3 sentences (max 150 words), in JSON format:
+      {
+        "perspective": "<character perspective, e.g., 'Protagonist', 'Mysterious Stranger', or 'Confidant'>",
+        "text": "<short, impactful scene description that blends suspense and romantic tension>",
+        "choices": [
+          {"option": "<player choice>"},
+          {"option": "<another player choice>"}
+        ]
+      }`;
+    }
+    else if (storyId === 3){
+      initialPrompt = `Generate the opening scene of a murder mystery thriller in 2-3 sentences (max 150 words), in JSON format:
+      {
+        "perspective": "<character perspective, e.g., 'Detective', 'Family Member', or 'Outsider'>",
+        "text": "<short, impactful scene description that blends suspense and intrigue>",
+        "choices": [
+          {"option": "<player choice>"},
+          {"option": "<another player choice>"}
+        ]
+      }`;
+    }
     generateScene(initialPrompt);
   };
 
