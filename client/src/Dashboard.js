@@ -9,7 +9,6 @@ import quest from './questionmark.jpg';
 
 const Dashboard = ({ onLogout }) => {
   const [userStories, setUserStories] = useState([]); //Stores user-made stories
-  const [storyCount, setStoryCount] = useState(3); //Initialising storyCount to 3 as there are 3 premade stories
   const year = new Date().getFullYear();
 
   //Retrieves user-made storues from local storage
@@ -82,13 +81,13 @@ const Dashboard = ({ onLogout }) => {
           </div>
 
           {/* User-Created Stories: Path changes dynamically as each story is added*/}
-          {userStories.map((story) => {
-            // setStoryCount({storyCount: story.storyCount + 1});
+          {userStories.map((story, index) => {
+            const storyCount = index + 4;
             return (<div className="story-card" key={story.id}>
               <img src={quest} alt="Story 3" />
               <h3>{story.name}</h3>
               <p>Custom story created by you.</p>
-              <Link to={`/story/${story.id}`}>
+              <Link to={`/story/${storyCount}`}>
                 <button className="read-more-btn">Play Now</button>
               </Link>
             </div>
