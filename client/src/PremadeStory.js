@@ -6,7 +6,6 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 //To Do in this file
 //1. Loading spinner thing
 //2. Move Gemini API to env
-//3. Change to different prompts for each of the 3 premade stories
 //4. Change progress from local storage to mongo
 
 const PremadeStory = ({ token, onChoose, onLogout }) => {
