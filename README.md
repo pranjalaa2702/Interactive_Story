@@ -1,6 +1,6 @@
 # Interactive Story - GitHub Readme
 
-Welcome to the **Interactive Story** project! This repository showcases an engaging web application built using React. Below you will find instructions on how to set up and use the website effectively.
+Welcome to the **Interactive Story** project! This repository showcases an engaging web application built using React. Below you will find instructions on how to set up and use the website effectively. With this website delve into an endless world of creativity where only your imagination is the limit to the stories you can play. From pre-made love stories to user generated wild stories, you can have it all.
 
 ## Table of Contents
 
