@@ -16,8 +16,7 @@ const StoryGenerator = ({ token, onChoose, onLogout }) => {
   const [isButtonDisabled, setIsButtonDisabled] = useState(false); //Stores button state
 
   //To store API key in environment variables
-  //const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
-  const genAI = new GoogleGenerativeAI('AIzaSyDFX-jeNr095kCQ_nqInr6mcxjLeePQZtI');
+  const genAI = process.env.REACT_APP_GOOGLE_API_KEY;
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
   //Connecting to Gemini and checking the response

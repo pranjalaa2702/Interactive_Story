@@ -11,15 +11,15 @@ const User = require('./User');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto'); // for generating reset tokens
 const axios = require('axios');
+require('dotenv').config();
 
 const app = express();
 app.set('trust proxy', true);
 const port = 3001; // This should match the client-side port
 
 // JWT Secret and MongoDB URI (Hardcoded)
-const JWT_SECRET = 'rosh is a dumbass'; // Replace with a strong secret key
-const MONGODB_URI = 'mongodb+srv://roshr:VP6vOrMOZ5uKzMNw@project1.r2d67.mongodb.net/project1?retryWrites=true&w=majority&appName=project1';
-
+const JWT_SECRET = process.env.JWT_TOKEN; // Replace with a strong secret key
+const MONGODB_URI = process.env.DB_CONNECT;
 app.use(express.json());
 app.use(cors());
 app.use(helmet());
@@ -34,8 +34,8 @@ app.use(limiter);
 const transporter = nodemailer.createTransport({
   service: 'gmail', // You can change this to another service
   auth: {
-    user: 'metamorphosisrestaurant365@gmail.com', // Your email
-    pass: 'cgka ugii xbwa hnjz', // Your email password or app password
+    user: process.env.MAIL, // Your email
+    pass: process.env.PASS, // Your email password or app password
   },
   tls: {
     rejectUnauthorized: false, // Accept self-signed certificates
@@ -96,7 +96,7 @@ app.post('/api/auth/register',
       // Send verification email
       const verificationLink = `http://localhost:3001/api/auth/verify/${user._id}`;
       const mailOptions = {
-        from: 'metamorphosisrestaurant365@gmail.com',
+        from: process.env.MAIL,
         to: email,
         subject: 'Email Verification',
         text: `Hello ${username},\n\nPlease verify your email by clicking the link: ${verificationLink}`,

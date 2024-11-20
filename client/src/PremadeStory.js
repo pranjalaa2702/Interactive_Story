@@ -19,7 +19,7 @@ const PremadeStory = ({ token, onChoose, onLogout }) => {
   const navigate = useNavigate();
 
   //Gemini API
-  const genAI = new GoogleGenerativeAI("AIzaSyDFX-jeNr095kCQ_nqInr6mcxjLeePQZtI");
+  const genAI = new GoogleGenerativeAI("AIzaSyAmwxdmEJEpt3dxZnZ3R7B-p2zf4tCpSq4");
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   //Generating story based on prompt which are premade.

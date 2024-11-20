@@ -405,11 +405,10 @@ textarea {
     background-color: rgba(240, 240, 240, 0.95);
     border-radius: 1%;
     box-shadow: 0 2% 5% rgba(0, 0, 0, 0.2);
-    font-size: 1.5vw;
+    font-size: 1rem;
     border: none;
     outline: none;
-    min-height: 10%;
-    width: 80%;
+    width: 40%;
     font-family: Arial, sans-serif;
 }
 
